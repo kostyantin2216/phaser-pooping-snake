@@ -1,0 +1,20 @@
+{
+  "name": "crossy-rpg",
+  "version": "1.0.0",
+  "description": "A follow along Phaser 3 learning project on Zenva Academy",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "npm run build && webpack-dev-server --port=8000"
+  },
+  "author": "",
+  "license": "",
+  "devDependencies": {
+    "webpack-dev-server": "^2.11.0",
+    "webpack": "^3.4.1",
+    "raw-loader": "^0.5.1"
+  },
+  "dependencies": {
+    "phaser": "^3.16.2"
+  }
+}
