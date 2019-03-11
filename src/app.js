@@ -1,6 +1,4 @@
 import Phaser from 'phaser';
-import Model from './mc/model';
-import Controller from './mc/controller';
 
 class App {
 

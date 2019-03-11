@@ -1,14 +1,17 @@
 import 'phaser';
 
 import app from './app';
+import MainScene from './main.scene';
 
 window.onload = function() {
     const config = {
         type: Phaser.AUTO,
         parent: 'phaser-game',
-        width: 480,
-        height: 640,
-        scene: []
+        width: 500,
+        height: 500,
+        scene: [
+            MainScene
+        ]
     };
 
     app.init(config);
