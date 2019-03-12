@@ -1,4 +1,6 @@
-import Assets from "../assets";
+import Phaser from 'phaser';
+import Assets from '../assets';
+import SnakePart from './snake-part';
 
 export default class Snake {
 
@@ -14,13 +16,18 @@ export default class Snake {
         if (!config.x) config.x = this.scene.sys.game.config.width / 2;
         if (!config.y) config.y = this.scene.sys.game.config.height / 2;
         
+        this.head = new SnakePart({
+            snake: this,
+            key: Assets.SNAKE_HEAD,
+            x: config.x,
+            y: config.y,
+        });
 
-
-        this.head = this.scene.add.sprite(config.x, config.y, Assets.SNAKE_HEAD);
-        this.head.setScale(this.scale);
-
-        this.tail = this.scene.add.sprite(config.x, config.y + this.head.displayHeight, Assets.SNAKE_BODY);
-        this.tail.setScale(this.scale);
+        this.tail = new SnakePart({
+            snake: this,
+            x: config.x,
+            y: config.y + this.head.body.displayHeight,
+        });
 
         this.head.next = this.tail;
         this.tail.prev = this.head;
@@ -29,77 +36,130 @@ export default class Snake {
     grow() {
         const oldTail = this.tail;
 
-        this.tail = this.scene.add.sprite(oldTail.x, oldTail.y + oldTail.displayHeight, Assets.SNAKE_BODY);
-        this.tail.setScale(this.scale);
+        this.tail = new SnakePart({
+            snake: this,
+            x: oldTail.body.x,
+            y: oldTail.body.y + oldTail.body.displayHeight,
+        });
 
         this.tail.prev = oldTail;
         oldTail.next = this.tail;
     }
+    
+    canMove(direction) {
+        const part = this.head;
 
-    move(direction, part = this.head) {
-        if (part === this.head) {
-            switch(direction) {
-                case Snake.DIRECTION_LEFT:
-                part.angle = 270;
+        let newX = null;
+        let newY = null;
+
+        switch (direction) {
+            
+            case Snake.DIRECTION_LEFT:
+                newX = part.body.x - this.head.body.displayWidth;
                 break;
 
             case Snake.DIRECTION_RIGHT:
-                part.angle = 90;
+                newX = part.body.x + this.head.body.displayWidth;
                 break;
 
             case Snake.DIRECTION_UP:
-            part.angle = 360;
-            break;
-            
-            case Snake.DIRECTION_DOWN:
-            part.angle = 180;
+                newY = part.body.y - this.head.body.displayHeight;
                 break;
+
+            case Snake.DIRECTION_DOWN:
+                newY = part.body.y + this.head.body.displayHeight;
+                break;
+
+        }
+
+        let inBounds = false;
+        if (newX !== null) {
+            inBounds = newX > 0 && newX < this.scene.sys.game.config.width;
+        } else if (newY !== null) {
+            inBounds = newY > 0 && newY < this.scene.sys.game.config.height;
+        }
+
+        if (inBounds) {
+            return part.getLocationOfNext() != direction;
+        }
+
+        return inBounds;
+    }
+
+    move(direction, part = this.head) {
+        let canMove = true;
+        if (part === this.head) {
+            canMove = this.canMove(direction);
+            if (canMove) {
+                switch(direction) {
+                    case Snake.DIRECTION_LEFT:
+                        part.body.angle = 270;
+                        break;
+
+                    case Snake.DIRECTION_RIGHT:
+                        part.body.angle = 90;
+                        break;
+
+                    case Snake.DIRECTION_UP:
+                        part.body.angle = 360;
+                        break;
+                    
+                    case Snake.DIRECTION_DOWN:
+                        part.body.angle = 180;
+                        break;
+                }
             }
         }
 
-        let nextDirection = null;
-        if (part.next) {
+        if (canMove) {
+            let nextDirection = null;
+            let nextLocation = part.getLocationOfNext();
+            if (nextLocation != null) {
+                switch (nextLocation) {
+                    case SnakePart.LOCATION_DOWN:
+                        nextDirection = Snake.DIRECTION_UP;
+                        break;
+                    case SnakePart.LOCATION_UP:
+                        nextDirection = Snake.DIRECTION_DOWN;
+                        break;
+                    case SnakePart.LOCATION_LEFT:
+                        nextDirection = Snake.DIRECTION_RIGHT;
+                        break;
+                    case SnakePart.LOCATION_RIGHT:
+                        nextDirection = Snake.DIRECTION_LEFT;
+                        break;
+                }
+            }
 
-            const isBelow   = part.y - part.next.y < 0;
-            const isAbove   = part.y - part.next.y > 0;
-            const isToLeft  = part.x - part.next.x < 0;
-            const isToRight = part.x - part.next.x > 0;
+            part.move(direction);
 
-            if (isBelow) {
-                nextDirection = Snake.DIRECTION_UP;
-            } else if(isAbove) {
-                nextDirection = Snake.DIRECTION_DOWN;
-            } else if(isToLeft) {
-                nextDirection = Snake.DIRECTION_LEFT;
-            } else if(isToRight) {
-                nextDirection = Snake.DIRECTION_RIGHT;
-            } 
-            console.log(nextDirection);
+            if (nextDirection !== null) {
+                this.move(nextDirection, part.next);
+            }
         }
+    }
 
-        switch(direction) {
+    isOccupied(x, y) {
+        if (x == null || y == null) return false;
 
-            case Snake.DIRECTION_LEFT:
-                part.x -= this.head.displayWidth;
-                break;
+        let part = this.head;
 
-            case Snake.DIRECTION_RIGHT:
-                part.x += this.head.displayWidth;
-                break;
+        do {
+            const paddingX = part.body.displayWidth;
+            const minX = part.body.x - paddingX;
+            const maxX = part.body.x + paddingX;
+            
+            const paddingY = part.body.displayHeight;
+            const minY = part.body.y - paddingY;
+            const maxY = part.body.y + paddingY;
 
-            case Snake.DIRECTION_UP:
-                part.y -= this.head.displayHeight;
-                break;
+            if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                return true;
+            }
+            part = part.next;
+        } while (part != null);
 
-            case Snake.DIRECTION_DOWN:
-                part.y += this.head.displayHeight;
-                break;
-
-        }
-
-        if (nextDirection !== null) {
-            this.move(nextDirection, part.next);
-        }
+        return false;
     }
 
 }

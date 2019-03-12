@@ -1,7 +1,7 @@
 {
-  "name": "crossy-rpg",
+  "name": "pooping-snake",
   "version": "1.0.0",
-  "description": "A follow along Phaser 3 learning project on Zenva Academy",
+  "description": "First Phaser 3 Game made from scratch",
   "main": "src/index.js",
   "scripts": {
     "build": "webpack",

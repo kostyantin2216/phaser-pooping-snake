@@ -7,6 +7,8 @@ const RED_APPLE    = 'redApple';
 const GREEN_APPLE  = 'greenApple';
 const YELLOW_APPLE = 'yellowApple';
 const BRICK_WALL   = 'brickWall';
+const POOP         = 'poop';
+const TOILET_PAPER = 'toiletPaper';
 
 export default class Assets {
     static get SNAKE_HEAD()   { return SNAKE_HEAD; }
@@ -17,4 +19,6 @@ export default class Assets {
     static get GREEN_APPLE()  { return GREEN_APPLE; }
     static get YELLOW_APPLE() { return YELLOW_APPLE; }
     static get BRICK_WALL()   { return BRICK_WALL; }
+    static get POOP()         { return POOP; }
+    static get TOILET_PAPER() { return TOILET_PAPER; }
 }
