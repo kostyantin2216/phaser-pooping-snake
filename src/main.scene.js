@@ -3,7 +3,6 @@ import Assets from './assets';
 import Snake from './components/snake';
 import ConsumableManager from './consumable.manager';
 import Consumable from './components/consumable';
-import showCoordsOnHover from './dev.utils';
 
 export const SCENE_NAME = 'MainScene';
 
@@ -16,7 +15,7 @@ export default class MainScene extends Phaser.Scene {
     }
 
     init(data) {
-
+        
     }
 
     preload() {
@@ -36,104 +35,9 @@ export default class MainScene extends Phaser.Scene {
         const scale = 1.4;
         this.snake = new Snake({ scene: this, scale });
         this.consumableManager = new ConsumableManager({ scene: this, scale, snake: this.snake });
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-        this.snake.grow();
-
-        showCoordsOnHover(this);
-
-       this.consumableManager.create(Consumable.TYPE_HEALTHY);
-         this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
- 
-       this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY); 
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_SAFE);
-        this.consumableManager.create(Consumable.TYPE_DANGEROUS);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY); 
         this.cursors = this.input.keyboard.createCursorKeys();
+
+        this.consumableManager.create(Consumable.TYPE_HEALTHY);
     }
 
     update() {
@@ -145,6 +49,13 @@ export default class MainScene extends Phaser.Scene {
             this.snake.move(Snake.DIRECTION_UP);
         } else if (this.cursors.down.isDown) {
             this.snake.move(Snake.DIRECTION_DOWN);
+        }
+
+        const consumable = this.consumableManager.findCollidedConsumable();
+        if (consumable !== null) {
+            this.consumableManager.remove(consumable);
+            this.consumableManager.create(Consumable.TYPE_HEALTHY);
+            this.snake.grow();
         }
     }
 

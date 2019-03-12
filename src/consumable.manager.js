@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 
 import Assets from './assets';
 import Consumable from './components/consumable';
@@ -49,6 +50,29 @@ export default class ConsumableManager {
         return consumable;
     }
 
+    remove(consumable) {
+        this.currentConsumables = this.currentConsumables.filter(
+            (cc) => cc.body.x !== consumable.body.x && cc.body.y !== consumable.body.y
+        );
+        consumable.body.destroy();
+        console.log('removed', this.currentConsumables);
+    }
+
+    findCollidedConsumable() {
+        const snakeHead = this.snake.head;
+        const consumableCount = this.currentConsumables.length;
+
+        for (let i = 0; i < consumableCount; i++) {
+            const consumable = this.currentConsumables[i];
+
+            if (Phaser.Geom.Intersects.RectangleToRectangle(snakeHead.body.getBounds(), consumable.body.getBounds())) {
+                return consumable;
+            }
+        }
+
+        return null;
+    }
+
     findUnoccupiedCoords() {
         const { width, height } = this.scene.sys.game.config;
 
@@ -71,11 +95,11 @@ export default class ConsumableManager {
         for (let i = 0; i < consumableCount; i++) {
             const consumable = this.currentConsumables[i];
 
-            const paddingX = consumable.body.displayWidth;
+            const paddingX = consumable.body.displayWidth * 2;
             const minX = consumable.body.x - paddingX;
             const maxX = consumable.body.x + paddingX;
             
-            const paddingY = consumable.body.displayHeight;
+            const paddingY = consumable.body.displayHeight * 2;
             const minY = consumable.body.y - paddingY;
             const maxY = consumable.body.y + paddingY;
 

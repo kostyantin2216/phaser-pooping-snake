@@ -12,6 +12,8 @@ export default class Snake {
     constructor(config) {
         this.scene = config.scene;
         this.scale = config.scale || 1.4;
+        this.moveDelay = config.moveDelay || 3;
+        this.moveTicks = 0;
 
         if (!config.x) config.x = this.scene.sys.game.config.width / 2;
         if (!config.y) config.y = this.scene.sys.game.config.height / 2;
@@ -36,10 +38,28 @@ export default class Snake {
     grow() {
         const oldTail = this.tail;
 
+        const prevLocation = oldTail.getLocationOfPrev();
+        const { displayHeight, displayWidth } = oldTail.body;
+
+        let x = oldTail.body.x;
+        let y = oldTail.body.y;
+        switch (prevLocation) {
+            case SnakePart.LOCATION_DOWN:
+                y -= displayHeight;
+                break;
+            case SnakePart.LOCATION_UP:
+                y += displayHeight;
+                break;
+            case SnakePart.LOCATION_LEFT:
+                x += displayWidth;
+                break;
+            case SnakePart.LOCATION_RIGHT:
+                x -= displayWidth;
+                break;
+        }
+        
         this.tail = new SnakePart({
-            snake: this,
-            x: oldTail.body.x,
-            y: oldTail.body.y + oldTail.body.displayHeight,
+            snake: this, x, y
         });
 
         this.tail.prev = oldTail;
@@ -47,6 +67,8 @@ export default class Snake {
     }
     
     canMove(direction) {
+        if (this.moveTicks % this.moveDelay !== 0) return false;
+
         const part = this.head;
 
         let newX = null;
@@ -89,6 +111,7 @@ export default class Snake {
     move(direction, part = this.head) {
         let canMove = true;
         if (part === this.head) {
+            this.moveTicks++;
             canMove = this.canMove(direction);
             if (canMove) {
                 switch(direction) {

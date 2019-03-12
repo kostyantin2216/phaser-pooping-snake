@@ -47,13 +47,23 @@ export default class SnakePart {
     getLocationOfNext() {
         if (!this.next) return;
 
-        if (this.body.y - this.next.body.y < 0) {
+        return this.getLocation(this.next);
+    }
+
+    getLocationOfPrev() {
+        if (!this.prev) return;
+
+        return this.getLocation(this.prev);
+    }
+
+    getLocation(part) {
+        if (this.body.y - part.body.y < 0) {
             return SnakePart.LOCATION_DOWN;
-        } else if (this.body.y - this.next.body.y > 0) {
+        } else if (this.body.y - part.body.y > 0) {
             return SnakePart.LOCATION_UP;
-        } else if (this.body.x - this.next.body.x < 0) {
+        } else if (this.body.x - part.body.x < 0) {
             return SnakePart.LOCATION_RIGHT;
-        } else if (this.body.x - this.next.body.x > 0) {
+        } else if (this.body.x - part.body.x > 0) {
             return SnakePart.LOCATION_LEFT;
         }
     }
