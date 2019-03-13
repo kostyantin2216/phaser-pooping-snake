@@ -1,17 +1,16 @@
 import Phaser from 'phaser';
-import Assets from '../assets';
+
+import Assets from '../data/assets';
+import Direction from '../data/direction';
+import Location from '../data/location';
+import Consumable from './consumable';
 import SnakePart from './snake-part';
 
 export default class Snake {
 
-    static get DIRECTION_LEFT()  { return 0; }
-    static get DIRECTION_RIGHT() { return 1; }
-    static get DIRECTION_UP()    { return 2; }
-    static get DIRECTION_DOWN()  { return 3; }
-
     constructor(config) {
         this.scene = config.scene;
-        this.scale = config.scale || 1.4;
+        this.scale = config.scale || 1;
         this.moveDelay = config.moveDelay || 3;
         this.moveTicks = 0;
 
@@ -44,16 +43,16 @@ export default class Snake {
         let x = oldTail.body.x;
         let y = oldTail.body.y;
         switch (prevLocation) {
-            case SnakePart.LOCATION_DOWN:
+            case Location.BELOW:
                 y -= displayHeight;
                 break;
-            case SnakePart.LOCATION_UP:
+            case Location.ABOVE:
                 y += displayHeight;
                 break;
-            case SnakePart.LOCATION_LEFT:
+            case Location.TO_LEFT:
                 x += displayWidth;
                 break;
-            case SnakePart.LOCATION_RIGHT:
+            case Location.TO_RIGHT:
                 x -= displayWidth;
                 break;
         }
@@ -76,19 +75,19 @@ export default class Snake {
 
         switch (direction) {
             
-            case Snake.DIRECTION_LEFT:
+            case Direction.LEFT:
                 newX = part.body.x - this.head.body.displayWidth;
                 break;
 
-            case Snake.DIRECTION_RIGHT:
+            case Direction.RIGHT:
                 newX = part.body.x + this.head.body.displayWidth;
                 break;
 
-            case Snake.DIRECTION_UP:
+            case Direction.UP:
                 newY = part.body.y - this.head.body.displayHeight;
                 break;
 
-            case Snake.DIRECTION_DOWN:
+            case Direction.DOWN:
                 newY = part.body.y + this.head.body.displayHeight;
                 break;
 
@@ -115,19 +114,19 @@ export default class Snake {
             canMove = this.canMove(direction);
             if (canMove) {
                 switch(direction) {
-                    case Snake.DIRECTION_LEFT:
+                    case Direction.LEFT:
                         part.body.angle = 270;
                         break;
 
-                    case Snake.DIRECTION_RIGHT:
+                    case Direction.RIGHT:
                         part.body.angle = 90;
                         break;
 
-                    case Snake.DIRECTION_UP:
+                    case Direction.UP:
                         part.body.angle = 360;
                         break;
                     
-                    case Snake.DIRECTION_DOWN:
+                    case Direction.DOWN:
                         part.body.angle = 180;
                         break;
                 }
@@ -139,17 +138,17 @@ export default class Snake {
             let nextLocation = part.getLocationOfNext();
             if (nextLocation != null) {
                 switch (nextLocation) {
-                    case SnakePart.LOCATION_DOWN:
-                        nextDirection = Snake.DIRECTION_UP;
+                    case Location.BELOW:
+                        nextDirection = Direction.UP;
                         break;
-                    case SnakePart.LOCATION_UP:
-                        nextDirection = Snake.DIRECTION_DOWN;
+                    case Location.ABOVE:
+                        nextDirection = Direction.DOWN;
                         break;
-                    case SnakePart.LOCATION_LEFT:
-                        nextDirection = Snake.DIRECTION_RIGHT;
+                    case Location.TO_LEFT:
+                        nextDirection = Direction.RIGHT;
                         break;
-                    case SnakePart.LOCATION_RIGHT:
-                        nextDirection = Snake.DIRECTION_LEFT;
+                    case Location.TO_RIGHT:
+                        nextDirection = Direction.LEFT;
                         break;
                 }
             }
@@ -157,9 +156,12 @@ export default class Snake {
             part.move(direction);
 
             if (nextDirection !== null) {
-                this.move(nextDirection, part.next);
+                return this.move(nextDirection, part.next);
+            } else if (part === this.tail) {
+                return true;
             }
         }
+        return false;
     }
 
     isOccupied(x, y) {
@@ -183,6 +185,40 @@ export default class Snake {
         } while (part != null);
 
         return false;
+    }
+
+    isOverlapping() {
+        const headBounds = this.head.body.getBounds();
+
+        let next = this.head.next.next;
+        while(next) {
+            const nextBounds = next.body.getBounds();
+            if (Phaser.Geom.Intersects.RectangleToRectangle(headBounds, nextBounds)) {
+                const overlappingX = Math.max(headBounds.x, nextBounds.x);
+                const overlappingY = Math.max(headBounds.y, nextBounds.y);
+                const overlappingW = Math.min(headBounds.right, nextBounds.right) - overlappingX;
+                const overlappingH = Math.min(headBounds.bottom, nextBounds.bottom) - overlappingY;
+
+                if (overlappingW > 3 || overlappingH > 3) {
+                    return true;
+                }
+            }
+
+            next = next.next;
+        }
+        return false;
+    }
+
+    hitWorldBounds() {
+        const head = this.head.body;
+
+        if (head.x > head.displayWidth && head.y > head.displayHeight) {
+            const { width, height } = this.scene.sys.game.config;
+            if (head.x < width - head.displayWidth && head.y < height - head.displayHeight) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

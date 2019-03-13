@@ -1,13 +1,10 @@
-import Assets from "../assets";
+import Assets from "../data/assets";
+import Direction from '../data/direction';
+import Location from '../data/location';
 import Snake from "./snake";
 
 export default class SnakePart {
-
-    static get LOCATION_LEFT()  { return 0; }
-    static get LOCATION_RIGHT() { return 1; }
-    static get LOCATION_UP()    { return 2; }
-    static get LOCATION_DOWN()  { return 3; }
-
+    
     constructor(config) {
         this.snake = config.snake;
         this.scene = this.snake.scene;
@@ -26,19 +23,19 @@ export default class SnakePart {
 
     move(direction) {
         switch(direction) {
-            case Snake.DIRECTION_LEFT:
+            case Direction.LEFT:
                 this.body.x -= this.snake.head.body.displayWidth;
                 break;
 
-            case Snake.DIRECTION_RIGHT:
+            case Direction.RIGHT:
                 this.body.x += this.snake.head.body.displayWidth;
                 break;
 
-            case Snake.DIRECTION_UP:
+            case Direction.UP:
                 this.body.y -= this.snake.head.body.displayHeight;
                 break;
 
-            case Snake.DIRECTION_DOWN:
+            case Direction.DOWN:
                 this.body.y += this.snake.head.body.displayHeight;
                 break;
         }
@@ -58,13 +55,13 @@ export default class SnakePart {
 
     getLocation(part) {
         if (this.body.y - part.body.y < 0) {
-            return SnakePart.LOCATION_DOWN;
+            return Location.BELOW;
         } else if (this.body.y - part.body.y > 0) {
-            return SnakePart.LOCATION_UP;
+            return Location.ABOVE;
         } else if (this.body.x - part.body.x < 0) {
-            return SnakePart.LOCATION_RIGHT;
+            return Location.TO_RIGHT;
         } else if (this.body.x - part.body.x > 0) {
-            return SnakePart.LOCATION_LEFT;
+            return Location.TO_LEFT;
         }
     }
 
