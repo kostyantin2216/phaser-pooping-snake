@@ -35,31 +35,38 @@ export default class ConsumableManager {
         
         this.store = new ConsumableStore();
         this.timer = null;
-        this.keepCreating = true;
+        
+        this._autoCreateOn = null;
+        this.autoCreateDelay = config.autoCreateDelay || 1000;
+        this.autoCreateOn = config.autoCreateOn || false;
     }
 
-    stopAutoCreate() {
-        this.keepCreating = false;
-        if (this.timer !== null) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
+    get autoCreateOn() {
+        return this._autoCreateOn;
     }
 
-    scheduleAutoCreate(minDelay, maxDelay) {
-        if (this.keepCreating) {
-            const delay = Math.floor((Math.random() * (maxDelay - minDelay)) + minDelay);
-            this.timer = setTimeout(() => {
-                if (this.keepCreating) {
-                    this.autoCreate();
-                    this.scheduleAutoCreate(minDelay, maxDelay);
-                }
-            }, delay);
+    set autoCreateOn(val) {
+        this._autoCreateOn = val;
+
+        if (val) {
+            const timerConfig = {
+                loop: true,
+                delay: this.autoCreateDelay,
+                callback: this.autoCreate,
+                callbackScope: this
+            };
+            if (this.timer === null) {
+                this.timer = this.scene.time.addEvent(timerConfig);
+            } else {
+                this.timer.reset(timerConfig);
+            }
+            this.autoCreate();
+        } else if (this.timer !== null) {
+            this.timer.destroy();
         }
     }
 
     autoCreate() {
-        console.log('auto create');
         const healthyConsumables = this.store[Consumable.TYPE_HEALTHY];
 
         if (healthyConsumables.data.length < 1) {
@@ -69,8 +76,8 @@ export default class ConsumableManager {
         const dangerousConsumables = this.store[Consumable.TYPE_DANGEROUS];
         const safeConsumables = this.store[Consumable.TYPE_SAFE];
 
-        if (dangerousConsumables.length > 3 && safeConsumables.length < dangerousConsumables.length) {
-            const ellpasedMillis = getCurrentMillis() - dangerousConsumables.lastCreation;
+        if (dangerousConsumables.data.length > 3 && safeConsumables.data.length < dangerousConsumables.data.length) {
+            const ellpasedMillis = getCurrentMillis() - safeConsumables.lastCreation;
             const ellapsedSeconds = ellpasedMillis / 1000;
             if (ellapsedSeconds > 12) {
                 return this.create(Consumable.TYPE_SAFE);
@@ -186,6 +193,10 @@ export default class ConsumableManager {
         if (consumable.type === Consumable.TYPE_UNHEALTHY) {
             this.create(Consumable.TYPE_DANGEROUS);
         }
+
+        if (consumable.type === Consumable.TYPE_DANGEROUS && consumable.safeConsumable) {
+            this.store.remove(consumable.safeConsumable);
+        }
     }
 
     findCollidedConsumable() {
@@ -263,7 +274,7 @@ export default class ConsumableManager {
         }
 
         if (assets !== null) {
-            return assets[Math.floor(Math.random() * assets.length)];
+            return Phaser.Utils.Array.GetRandom(assets);
         }
     }
 

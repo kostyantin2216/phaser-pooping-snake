@@ -1,7 +1,7 @@
 import 'phaser';
 
 import app from './app';
-import MainScene from './main.scene';
+import MainScene from './scenes/main.scene';
 
 window.onload = function() {
     const config = {

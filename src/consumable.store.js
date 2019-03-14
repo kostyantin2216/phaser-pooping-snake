@@ -13,8 +13,6 @@ export default class ConsumableStore {
             this.totalConsumables += consumables.data.length;
             this[type] = consumables;
         });
-
-        console.log('created store');
     }
     
     createDefault(type) {
@@ -26,7 +24,6 @@ export default class ConsumableStore {
 
     add(consumable) {
         this[consumable.type].data.push(consumable);
-        console.log('added consumable', consumable, 'to consumables', this[consumable.type].data);
         this[consumable.type].lastCreation = getCurrentMillis();
         this.totalConsumables++;
     }
