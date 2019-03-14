@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 
 import Assets from './data/assets';
 import Consumable from './components/consumable';
+import ConsumableStore from './consumable.store';
+import { getCurrentMillis } from './utils/common.utils';
 
 const HEALTHY_ASSETS = [
     Assets.GREEN_APPLE,
@@ -30,21 +32,68 @@ export default class ConsumableManager {
         this.snake = config.snake;
         this.wallHeight = config.wallHeight || 0;
         this.wallWidth = config.wallWidth || 0;
-
-        this.currentConsumables = {
-            [Consumable.TYPE_HEALTHY]: [],
-            [Consumable.TYPE_UNHEALTHY]: [],
-            [Consumable.TYPE_SAFE]: [],
-            [Consumable.TYPE_DANGEROUS]: []
-        };
+        
+        this.store = new ConsumableStore();
+        this.timer = null;
+        this.keepCreating = true;
     }
 
-    flattenCurrentConsumables() {
-        const result = [];
-        for (const type in this.currentConsumables) {
-            result.push(...this.currentConsumables[type]);
+    stopAutoCreate() {
+        this.keepCreating = false;
+        if (this.timer !== null) {
+            clearInterval(this.timer);
+            this.timer = null;
         }
-        return result;
+    }
+
+    scheduleAutoCreate(minDelay, maxDelay) {
+        if (this.keepCreating) {
+            const delay = Math.floor((Math.random() * (maxDelay - minDelay)) + minDelay);
+            this.timer = setTimeout(() => {
+                if (this.keepCreating) {
+                    this.autoCreate();
+                    this.scheduleAutoCreate(minDelay, maxDelay);
+                }
+            }, delay);
+        }
+    }
+
+    autoCreate() {
+        console.log('auto create');
+        const healthyConsumables = this.store[Consumable.TYPE_HEALTHY];
+
+        if (healthyConsumables.data.length < 1) {
+            return this.create(Consumable.TYPE_HEALTHY);
+        }
+
+        const dangerousConsumables = this.store[Consumable.TYPE_DANGEROUS];
+        const safeConsumables = this.store[Consumable.TYPE_SAFE];
+
+        if (dangerousConsumables.length > 3 && safeConsumables.length < dangerousConsumables.length) {
+            const ellpasedMillis = getCurrentMillis() - dangerousConsumables.lastCreation;
+            const ellapsedSeconds = ellpasedMillis / 1000;
+            if (ellapsedSeconds > 12) {
+                return this.create(Consumable.TYPE_SAFE);
+            }
+        }
+
+        const unhealthyConsumables = this.store[Consumable.TYPE_UNHEALTHY];
+
+        if (unhealthyConsumables.data.length < 3) {
+            const ellpasedMillis = getCurrentMillis() - unhealthyConsumables.lastCreation;
+            const ellapsedSeconds = ellpasedMillis / 1000;
+            if (ellapsedSeconds > 8) {
+                return this.create(Consumable.TYPE_UNHEALTHY);
+            }
+        }
+
+        if (healthyConsumables.data.length < 5) {
+            const ellpasedMillis = getCurrentMillis() - healthyConsumables.lastCreation;
+            const ellapsedSeconds = ellpasedMillis / 1000;
+            if (ellapsedSeconds > 4) {
+                return this.create(Consumable.TYPE_HEALTHY);
+            }
+        }
     }
 
     create(type) {
@@ -54,7 +103,7 @@ export default class ConsumableManager {
         let dangerousConsumable = null;
 
         if (type === Consumable.TYPE_SAFE) {
-            const dangerousConsumables = this.currentConsumables[Consumable.TYPE_DANGEROUS];
+            const dangerousConsumables = this.store[Consumable.TYPE_DANGEROUS].data;
             for (let i = 0; i < dangerousConsumables.length; i++) {
                 if(!dangerousConsumables[i].safeConsumable) {
                     dangerousConsumable = dangerousConsumables[i];
@@ -122,42 +171,26 @@ export default class ConsumableManager {
             dangerousConsumable.safeConsumable = consumable;
         }
 
-        this.currentConsumables[type].push(consumable);
+        this.store.add(consumable);
 
         return consumable;
     }
 
     onConsume(consumable) {
-        this.remove(consumable);
-        if (consumable.type === Consumable.TYPE_SAFE) {
-            if (consumable.dangerousConsumable) {
-                this.remove(consumable.dangerousConsumable);
-            }
-        } else if (consumable.type !== Consumable.TYPE_DANGEROUS) {
-            this.create(consumable.type);
-            
-            if (consumable.type === Consumable.TYPE_UNHEALTHY) {
-                this.create(Consumable.TYPE_DANGEROUS);
-                const dangerousConsumableCount = this.currentConsumables[Consumable.TYPE_DANGEROUS].length;
-                const safeConsumableCount = this.currentConsumables[Consumable.TYPE_SAFE].length;
-                if (dangerousConsumableCount % 3 === 0 && dangerousConsumableCount / 3 > safeConsumableCount) {
-                    this.create(Consumable.TYPE_SAFE);
-                }
-            }
-        }
-    }
+        this.store.remove(consumable);
 
-    remove(consumable) {
-        this.currentConsumables[consumable.type] = this.currentConsumables[consumable.type].filter(
-            (cc) => cc.body.x !== consumable.body.x && cc.body.y !== consumable.body.y
-        );
-        consumable.body.destroy();
-        consumable.body.alpha = .4;
+        if (this.store.totalConsumables === this.store.getCount(Consumable.TYPE_DANGEROUS)) {
+            this.autoCreate();
+        }
+
+        if (consumable.type === Consumable.TYPE_UNHEALTHY) {
+            this.create(Consumable.TYPE_DANGEROUS);
+        }
     }
 
     findCollidedConsumable() {
         const snakeHead = this.snake.head;
-        const allCurrentConsumables = this.flattenCurrentConsumables();
+        const allCurrentConsumables = this.store.getFlat();
         const consumableCount = allCurrentConsumables.length;
 
         for (let i = 0; i < consumableCount; i++) {
@@ -190,9 +223,11 @@ export default class ConsumableManager {
     isOccupied(x, y) {
         if (x == null || y == null) return false;
 
-        const consumableCount = this.currentConsumables.length;
+        const consumables = this.store.getFlat();
+        const consumableCount = consumables.length;
+
         for (let i = 0; i < consumableCount; i++) {
-            const consumable = this.currentConsumables[i];
+            const consumable = consumables[i];
 
             const paddingX = consumable.body.displayWidth * 2;
             const minX = consumable.body.x - paddingX;

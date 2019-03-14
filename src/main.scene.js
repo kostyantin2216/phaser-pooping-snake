@@ -38,7 +38,8 @@ export default class MainScene extends Phaser.Scene {
 
     create() {
         this.snake = new Snake({ 
-            scene: this
+            scene: this,
+            scale: this.scale,
         });
         this.consumableManager = new ConsumableManager({ 
             scene: this, 
@@ -49,16 +50,8 @@ export default class MainScene extends Phaser.Scene {
         this.wasd = this.input.keyboard.addKeys('W,S,A,D');
         this.buildWalls();
         
+        this.consumableManager.scheduleAutoCreate(1000, 1000);
         this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_HEALTHY);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
-        this.consumableManager.create(Consumable.TYPE_UNHEALTHY);
 
         showCoordsOnHover(this);
         
@@ -127,6 +120,7 @@ export default class MainScene extends Phaser.Scene {
 
     gameOver() {
         this.isTerminating = true;
+        this.consumableManager.stopAutoCreate();
         this.cameras.main.shake(500);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.SHAKE_COMPLETE, () => this.scene.restart());
     }
