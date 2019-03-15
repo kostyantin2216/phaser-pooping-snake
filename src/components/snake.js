@@ -10,15 +10,20 @@ export default class Snake {
 
     constructor(config) {
         this.scene = config.scene;
+        this.boundries = config.boundries;
         this.scale = config.scale || 1;
-        this.moveDelay = config.moveDelay || 3;
+        this.moveDelay = config.moveDelay || 4;
         this.moveTicks = 0;
+        this.areaWidth = config.areaWidth || this.scene.sys.game.config.width;
+        this.areaHeight = config.areaHeight || this.scene.sys.game.config.height;
+        this.container = config.container || null;
 
-        if (!config.x) config.x = this.scene.sys.game.config.width / 2;
-        if (!config.y) config.y = this.scene.sys.game.config.height / 2;
-        
+        if (!config.x) config.x = this.areaWidth / 2;
+        if (!config.y) config.y = this.areaHeight / 2;
+
         this.head = new SnakePart({
             snake: this,
+            container: this.container,
             key: Assets.SNAKE_HEAD,
             x: config.x,
             y: config.y,
@@ -26,6 +31,7 @@ export default class Snake {
 
         this.tail = new SnakePart({
             snake: this,
+            container: this.container,
             x: config.x,
             y: config.y + this.head.body.displayHeight,
         });
@@ -58,7 +64,10 @@ export default class Snake {
         }
         
         this.tail = new SnakePart({
-            snake: this, x, y
+            snake: this,
+            container: this.container,
+            x, 
+            y
         });
 
         this.tail.prev = oldTail;
@@ -95,9 +104,9 @@ export default class Snake {
 
         let inBounds = false;
         if (newX !== null) {
-            inBounds = newX > 0 && newX < this.scene.sys.game.config.width;
+            inBounds = newX > 0 && newX < this.areaWidth;
         } else if (newY !== null) {
-            inBounds = newY > 0 && newY < this.scene.sys.game.config.height;
+            inBounds = newY > 0 && newY < this.areaHeight;
         }
 
         if (inBounds) {
@@ -199,7 +208,7 @@ export default class Snake {
                 const overlappingW = Math.min(headBounds.right, nextBounds.right) - overlappingX;
                 const overlappingH = Math.min(headBounds.bottom, nextBounds.bottom) - overlappingY;
 
-                if (overlappingW > 3 || overlappingH > 3) {
+                if (overlappingW >= this.head.body.displayWidth / 1.2 && overlappingH >= this.head.body.displayHeight / 1.2) {
                     return true;
                 }
             }
@@ -209,16 +218,11 @@ export default class Snake {
         return false;
     }
 
-    hitWorldBounds() {
+    hitBoundries() {
         const head = this.head.body;
 
-        if (head.x > head.displayWidth && head.y > head.displayHeight) {
-            const { width, height } = this.scene.sys.game.config;
-            if (head.x < width - head.displayWidth && head.y < height - head.displayHeight) {
-                return false;
-            }
-        }
-        return true;
+        return head.x <= this.boundries.minX || head.x >= this.boundries.maxX
+            || head.y <= this.boundries.minY || head.y >= this.boundries.maxY;
     }
 
 }

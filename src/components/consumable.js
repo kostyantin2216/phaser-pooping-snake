@@ -18,9 +18,15 @@ export default class Consumable {
         this.scene = config.scene;
         this.type  = config.type;
 
+        const container = config.container || null;
+
         this.body = this.scene.add.sprite(config.x, config.y, config.key);
         this.body.setScale(config.scale);
         this.body.setInteractive();
+
+        if (container !== null) {
+            container.add(this.body);
+        }
     }
 
 }

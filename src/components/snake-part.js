@@ -9,6 +9,8 @@ export default class SnakePart {
         this.snake = config.snake;
         this.scene = this.snake.scene;
         
+        const container = config.container || null;
+
         const x   = config.x || 0;
         const y   = config.y || 0;
         const key = config.key || Assets.SNAKE_BODY;
@@ -19,6 +21,10 @@ export default class SnakePart {
         this.body = this.scene.add.sprite(x, y, key);
         this.body.setScale(this.snake.scale);
         this.body.setInteractive();
+
+        if (container !== null) {
+            container.add(this.body);
+        }
     }
 
     move(direction) {

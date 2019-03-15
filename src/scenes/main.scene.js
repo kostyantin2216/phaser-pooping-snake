@@ -2,10 +2,12 @@ import Phaser from 'phaser';
 
 import Consumable from '../components/consumable';
 import Snake from '../components/snake';
-import ConsumableManager from '../consumable.manager';
+import ConsumableManager from '../helpers/consumable.manager';
 import Assets from '../data/assets';
 import Direction from '../data/direction';
 import { showCoordsOnHover } from '../utils/dev.utils';
+import Toolbar from '../containers/toolbar';
+import GameBoard from '../containers/game-board';
 
 export const SCENE_NAME = 'MainScene';
 
@@ -18,69 +20,49 @@ export default class MainScene extends Phaser.Scene {
     }
 
     init(data) {
-        this.scale = 1.4;
+        this.scale = 1;
         this.snakeDirection = Direction.UP;
         this.isTerminating = false;
     }
 
     preload() {
+        this.load.image(Assets.BACKGROUND, 'assets/images/background.png');
         this.load.image(Assets.SNAKE_HEAD, 'assets/images/snake-head.png');
         this.load.image(Assets.SNAKE_BODY, 'assets/images/snake-body.png');
-        this.load.image(Assets.COOKIE, 'assets/images/cookie.png');
-        this.load.image(Assets.CHERRY, 'assets/images/cherry.png');
-        this.load.image(Assets.GREEN_APPLE, 'assets/images/green-apple.png');
-        this.load.image(Assets.RED_APPLE, 'assets/images/red-apple.png');
-        this.load.image(Assets.YELLOW_APPLE, 'assets/images/yellow-apple.png');
         this.load.image(Assets.BRICK_WALL, 'assets/images/brick-wall.png');
         this.load.image(Assets.POOP, 'assets/images/poop.png');
         this.load.image(Assets.TOILET_PAPER, 'assets/images/toilet-paper.png');
+        this.load.image(Assets.CHERRY, 'assets/images/cherry.png');
+        this.load.image(Assets.APPLE, 'assets/images/apple.png');
+        this.load.image(Assets.PEACH, 'assets/images/peach.png');
+        this.load.image(Assets.STRAWBERRY, 'assets/images/strawberry.png');
+        this.load.image(Assets.RED_PEPPER, 'assets/images/red-pepper.png');
+        this.load.image(Assets.GREEN_PEPPER, 'assets/images/green-pepper.png');
+        this.load.image(Assets.WATER_MELON, 'assets/images/water-melon.png');
+        this.load.image(Assets.PINEAPPLE, 'assets/images/pineapple.png');
+        this.load.image(Assets.LEMON, 'assets/images/lemon.png');
     }
 
     create() {
-        this.snake = new Snake({ 
+        this.toolbar = new Toolbar({
+            scene: this
+        });
+
+        this.gameBoard = new GameBoard({
             scene: this,
             scale: this.scale,
+            width: this.sys.game.config.width,
+            height: this.sys.game.config.height - this.toolbar.displayHeight,
+            y: this.toolbar.displayHeight
         });
-        this.consumableManager = new ConsumableManager({ 
-            scene: this, 
-            scale: this.scale, 
-            snake: this.snake,
-            autoCreateOn: true,
-            autoCreateDelay: 1500
-        });
+        
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = this.input.keyboard.addKeys('W,S,A,D');
-        this.buildWalls();
         
         showCoordsOnHover(this);
-        
-    }
 
-    buildWalls() {
-        const { width, height } = this.sys.game.config;
-        const wall = this.createWall(0, 0);
-        const wallWidth = wall.displayWidth;
-        const wallHeight = wall.displayHeight;
-
-        const bottomY = height - wallHeight;
-        this.createWall(0, bottomY);
-        for (let x = wallWidth; x < width; x += wallWidth) {
-            this.createWall(x, 0);
-            this.createWall(x, bottomY);
-        }
-
-        const rightX = width - wallWidth;
-        for (let y = wallHeight; y < bottomY; y += wallHeight) {
-            this.createWall(0, y);
-            this.createWall(rightX, y);
-        }
-    }
-
-    createWall(x, y) {
-        const wall = this.add.image(x, y, Assets.BRICK_WALL);
-        wall.setScale(1.1);
-        wall.setOrigin(0, 0);
-        return wall;
+        this.gameBoard.snake.grow();
+        this.gameBoard.snake.grow();
     }
 
     update() {
@@ -96,30 +78,22 @@ export default class MainScene extends Phaser.Scene {
             this.snakeDirection = Direction.DOWN;
         }
 
-        const moveComplete = this.snake.move(this.snakeDirection);
+        const moveComplete = this.gameBoard.move(this.snakeDirection);
         if (moveComplete) {
-            const overlapping = this.snake.isOverlapping();
-            const hitWorldBounds = this.snake.hitWorldBounds();
-            if (overlapping || hitWorldBounds) {
+            if (!this.gameBoard.validSnakeLocation()) {
                 return this.gameOver();
             }
 
-            const consumable = this.consumableManager.findCollidedConsumable();
-            if (consumable !== null) {
-                this.consumableManager.onConsume(consumable);
-                
-                if (consumable.type === Consumable.TYPE_HEALTHY) {
-                    this.snake.grow();
-                } else if (consumable.type === Consumable.TYPE_DANGEROUS) {
-                    return this.gameOver();
-                }
+            const consumable = this.gameBoard.tryToConsume();
+            if (consumable !== null && consumable.type === Consumable.TYPE_DANGEROUS) {
+                return this.gameOver();
             }
         }
     }
 
     gameOver() {
         this.isTerminating = true;
-        this.consumableManager.autoCreateOn = false;
+        this.gameBoard.consumableManager.autoCreateOn = false;
         this.cameras.main.shake(500);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.SHAKE_COMPLETE, () => this.scene.restart());
     }

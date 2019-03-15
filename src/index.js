@@ -7,8 +7,8 @@ window.onload = function() {
     const config = {
         type: Phaser.AUTO,
         parent: 'phaser-game',
-        width: 500,
-        height: 500,
+        width: 600,
+        height: 600,
         scene: [
             MainScene
         ]
