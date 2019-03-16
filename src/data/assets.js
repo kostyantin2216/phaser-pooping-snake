@@ -1,4 +1,5 @@
 
+const TITLE        = 'title';
 const BACKGROUND   = 'background';
 const SNAKE_HEAD   = 'snakeHead';
 const SNAKE_BODY   = 'snakeBody';
@@ -14,8 +15,14 @@ const GREEN_PEPPER = 'greenPepper';
 const WATER_MELON  = 'waterMelon';
 const PINEAPPLE    = 'pineapple';
 const LEMON        = 'lemon';
+const SMELLY_POOP  = 'smellyPoop';
+const ZEBRA_POOP   = 'zebraPoop';
+const HAPPY_POOP   = 'happyPoop';
+const CORN         = 'corn';
+const BTN_BLUE     = 'btnBlue';
 
 export default class Assets {
+    static get TITLE()          { return TITLE; }
     static get SNAKE_HEAD()     { return SNAKE_HEAD; }
     static get SNAKE_BODY()     { return SNAKE_BODY; }
     static get BRICK_WALL()     { return BRICK_WALL; }
@@ -31,4 +38,9 @@ export default class Assets {
     static get PINEAPPLE()      { return PINEAPPLE; }
     static get LEMON()          { return LEMON; }
     static get BACKGROUND()     { return BACKGROUND; }
+    static get SMELLY_POOP()    { return SMELLY_POOP; }
+    static get HAPPY_POOP()     { return HAPPY_POOP; }
+    static get ZEBRA_POOP()     { return ZEBRA_POOP; }
+    static get CORN()           { return CORN; }
+    static get BTN_BLUE()       { return BTN_BLUE; }
 }

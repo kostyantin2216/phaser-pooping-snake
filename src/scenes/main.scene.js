@@ -2,12 +2,13 @@ import Phaser from 'phaser';
 
 import Consumable from '../components/consumable';
 import Snake from '../components/snake';
-import ConsumableManager from '../helpers/consumable.manager';
+import ConsumableService from '../services/consumable.service';
 import Assets from '../data/assets';
 import Direction from '../data/direction';
 import { showCoordsOnHover } from '../utils/dev.utils';
 import Toolbar from '../containers/toolbar';
-import GameBoard from '../containers/game-board';
+import GameStage from '../containers/game-stage';
+import StageStateService from '../services/stage-state.service';
 
 export const SCENE_NAME = 'MainScene';
 
@@ -21,39 +22,29 @@ export default class MainScene extends Phaser.Scene {
 
     init(data) {
         this.scale = 1;
-        this.snakeDirection = Direction.UP;
+        this.snakeDirection = Direction.DOWN;
         this.isTerminating = false;
     }
 
     preload() {
-        this.load.image(Assets.BACKGROUND, 'assets/images/background.png');
-        this.load.image(Assets.SNAKE_HEAD, 'assets/images/snake-head.png');
-        this.load.image(Assets.SNAKE_BODY, 'assets/images/snake-body.png');
-        this.load.image(Assets.BRICK_WALL, 'assets/images/brick-wall.png');
-        this.load.image(Assets.POOP, 'assets/images/poop.png');
-        this.load.image(Assets.TOILET_PAPER, 'assets/images/toilet-paper.png');
-        this.load.image(Assets.CHERRY, 'assets/images/cherry.png');
-        this.load.image(Assets.APPLE, 'assets/images/apple.png');
-        this.load.image(Assets.PEACH, 'assets/images/peach.png');
-        this.load.image(Assets.STRAWBERRY, 'assets/images/strawberry.png');
-        this.load.image(Assets.RED_PEPPER, 'assets/images/red-pepper.png');
-        this.load.image(Assets.GREEN_PEPPER, 'assets/images/green-pepper.png');
-        this.load.image(Assets.WATER_MELON, 'assets/images/water-melon.png');
-        this.load.image(Assets.PINEAPPLE, 'assets/images/pineapple.png');
-        this.load.image(Assets.LEMON, 'assets/images/lemon.png');
     }
 
     create() {
         this.toolbar = new Toolbar({
-            scene: this
-        });
-
-        this.gameBoard = new GameBoard({
             scene: this,
             scale: this.scale,
-            width: this.sys.game.config.width,
+            height: 68
+        });
+
+        this.gameStage = new GameStage({
+            scene: this,
+            scale: this.scale,
             height: this.sys.game.config.height - this.toolbar.displayHeight,
-            y: this.toolbar.displayHeight
+            y: this.toolbar.displayHeight,
+        });
+
+        this.stageStateService = new StageStateService({
+            consumableService: this.gameStage.consumableService
         });
         
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -61,8 +52,8 @@ export default class MainScene extends Phaser.Scene {
         
         showCoordsOnHover(this);
 
-        this.gameBoard.snake.grow();
-        this.gameBoard.snake.grow();
+        this.gameStage.snake.grow();
+        this.gameStage.snake.grow();
     }
 
     update() {
@@ -78,13 +69,13 @@ export default class MainScene extends Phaser.Scene {
             this.snakeDirection = Direction.DOWN;
         }
 
-        const moveComplete = this.gameBoard.move(this.snakeDirection);
+        const moveComplete = this.gameStage.move(this.snakeDirection);
         if (moveComplete) {
-            if (!this.gameBoard.validSnakeLocation()) {
+            if (!this.gameStage.validSnakeLocation()) {
                 return this.gameOver();
             }
 
-            const consumable = this.gameBoard.tryToConsume();
+            const consumable = this.gameStage.tryToConsume();
             if (consumable !== null && consumable.type === Consumable.TYPE_DANGEROUS) {
                 return this.gameOver();
             }
@@ -93,7 +84,7 @@ export default class MainScene extends Phaser.Scene {
 
     gameOver() {
         this.isTerminating = true;
-        this.gameBoard.consumableManager.autoCreateOn = false;
+        this.gameStage.consumableService.autoCreateOn = false;
         this.cameras.main.shake(500);
         this.cameras.main.once(Phaser.Cameras.Scene2D.Events.SHAKE_COMPLETE, () => this.scene.restart());
     }

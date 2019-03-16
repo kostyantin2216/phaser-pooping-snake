@@ -17,6 +17,7 @@ export default class Snake {
         this.areaWidth = config.areaWidth || this.scene.sys.game.config.width;
         this.areaHeight = config.areaHeight || this.scene.sys.game.config.height;
         this.container = config.container || null;
+        this.stopped = config.stopped || false;
 
         if (!config.x) config.x = this.areaWidth / 2;
         if (!config.y) config.y = this.areaHeight / 2;
@@ -38,6 +39,26 @@ export default class Snake {
 
         this.head.next = this.tail;
         this.tail.prev = this.head;
+
+        this._visible = true;
+        if (config.visible != null) this.visible = config.visible;
+    }
+
+    get visible() {
+        return this._visible;
+    }
+
+    set visible(val) {
+        if (this._visible !== val) {
+            let part = this.head;
+
+            while (part) {
+                part.body.alpha = val ? 1 : 0;
+                part = part.next;
+            }
+
+            this._visible = val;
+        }
     }
 
     grow() {
@@ -75,7 +96,7 @@ export default class Snake {
     }
     
     canMove(direction) {
-        if (this.moveTicks % this.moveDelay !== 0) return false;
+        if (!this.stopped || this.moveTicks % this.moveDelay !== 0) return false;
 
         const part = this.head;
 
