@@ -3,6 +3,9 @@ import 'phaser';
 import app from './app';
 import MainScene from './scenes/main.scene';
 import TitleScene from './scenes/title.scene';
+import GameOverScene from './scenes/game-over.scene';
+import LoaderScene from './scenes/loader.scene';
+import PauseScene from './scenes/pause.scene';
 
 window.onload = function() {
     const config = {
@@ -11,8 +14,11 @@ window.onload = function() {
         width: 600,
         height: 600,
         scene: [
+            LoaderScene,
             TitleScene,
-            MainScene
+            MainScene,
+            PauseScene,
+            GameOverScene
         ]
     };
 

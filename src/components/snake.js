@@ -96,7 +96,7 @@ export default class Snake {
     }
     
     canMove(direction) {
-        if (!this.stopped || this.moveTicks % this.moveDelay !== 0) return false;
+        if (this.stopped || this.moveTicks % this.moveDelay !== 0) return false;
 
         const part = this.head;
 

@@ -6,6 +6,7 @@ import Consumable from '../components/consumable';
 import Events from '../data/events';
 import PlainButton from '../containers/plain-button';
 import MainScene from './main.scene';
+import PauseScene from './pause.scene';
 
 export const SCENE_NAME = 'TitleScene';
 
@@ -18,27 +19,6 @@ export default class TitleScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image(Assets.TITLE, 'assets/images/title.png');
-        this.load.image(Assets.BACKGROUND, 'assets/images/background.png');
-        this.load.image(Assets.SNAKE_HEAD, 'assets/images/snake-head.png');
-        this.load.image(Assets.SNAKE_BODY, 'assets/images/snake-body.png');
-        this.load.image(Assets.BRICK_WALL, 'assets/images/brick-wall.png');
-      //  this.load.image(Assets.POOP, 'assets/images/poop.png');
-        this.load.image(Assets.HAPPY_POOP, 'assets/images/happy-poop.png');
-        this.load.image(Assets.SMELLY_POOP, 'assets/images/smelly-poop.png');
-        this.load.image(Assets.ZEBRA_POOP, 'assets/images/zebra-poop.png');
-        this.load.image(Assets.TOILET_PAPER, 'assets/images/toilet-paper.png');
-        this.load.image(Assets.CHERRY, 'assets/images/cherry.png');
-        this.load.image(Assets.APPLE, 'assets/images/apple.png');
-        this.load.image(Assets.PEACH, 'assets/images/peach.png');
-        this.load.image(Assets.STRAWBERRY, 'assets/images/strawberry.png');
-        this.load.image(Assets.RED_PEPPER, 'assets/images/red-pepper.png');
-        this.load.image(Assets.GREEN_PEPPER, 'assets/images/green-pepper.png');
-        this.load.image(Assets.WATER_MELON, 'assets/images/water-melon.png');
-        this.load.image(Assets.PINEAPPLE, 'assets/images/pineapple.png');
-        this.load.image(Assets.LEMON, 'assets/images/lemon.png');
-        this.load.image(Assets.CORN, 'assets/images/corn.png');
-        this.load.image(Assets.BTN_BLUE, 'assets/images/buttons/round/blue.png');
     }
 
     create() {
@@ -52,7 +32,8 @@ export default class TitleScene extends Phaser.Scene {
                 stopped: true
             },
             consumableServiceConfig: {
-                autoCreateFunc: this.createPoop
+                autoCreateDelay: 500,
+                autoCreateFunc: this.createConsumable
             }
         });
 
@@ -67,25 +48,25 @@ export default class TitleScene extends Phaser.Scene {
             y: height - (height / 3)
         });
 
-        this.events.on(Events.START_GAME, this.startGame, this);
+        this.events.once(Events.START_GAME, this.startGame, this);
     }
 
     startGame() {
-        console.log('start game');
-        this.scene.start(MainScene.SCENE_NAME)
+       this.scene.start(MainScene.SCENE_NAME);
     }
 
-    createPoop(consumableStore) {
-        const dangerousConsumables = consumableStore[Consumable.TYPE_DANGEROUS];
-            const ellpasedMillis = getCurrentMillis() - dangerousConsumables.lastCreation;
-            const ellapsedSeconds = ellpasedMillis / 1000;
-            if (ellapsedSeconds > 1) {
-                return { 
-                    type: Consumable.TYPE_DANGEROUS,
-                    forceUnoccupied: true
-                };
-            }
-        
+    createConsumable(consumableStore) {
+        let type;
+        if (Math.random() * 100 < 60) {
+            type = Consumable.TYPE_HEALTHY;
+        } else {
+            type = Phaser.Utils.Array.GetRandom([Consumable.TYPE_HEALTHY, Consumable.TYPE_UNHEALTHY]);
+        }
+
+        return { 
+            type: type,
+            forceUnoccupied: true
+        };
     }
 
     update() {

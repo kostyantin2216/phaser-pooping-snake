@@ -9,6 +9,9 @@ import { showCoordsOnHover } from '../utils/dev.utils';
 import Toolbar from '../containers/toolbar';
 import GameStage from '../containers/game-stage';
 import StageStateService from '../services/stage-state.service';
+import GameOverScene from './game-over.scene';
+import Events from '../data/events';
+import PauseScene from './pause.scene';
 
 export const SCENE_NAME = 'MainScene';
 
@@ -22,7 +25,7 @@ export default class MainScene extends Phaser.Scene {
 
     init(data) {
         this.scale = 1;
-        this.snakeDirection = Direction.DOWN;
+        this.snakeDirection = Direction.UP;
         this.isTerminating = false;
     }
 
@@ -48,25 +51,34 @@ export default class MainScene extends Phaser.Scene {
         });
         
         this.cursors = this.input.keyboard.createCursorKeys();
-        this.wasd = this.input.keyboard.addKeys('W,S,A,D');
+        this.wasd = this.input.keyboard.addKeys('W,S,A,D,SPACE');
         
         showCoordsOnHover(this);
 
         this.gameStage.snake.grow();
         this.gameStage.snake.grow();
+
+        this.input.keyboard.on('keydown-SPACE', this.pauseGame, this);
+        this.events.on(Events.PAUSE_GAME, this.pauseGame, this);
+        this.events.on(Events.OPEN_SETTINGS, this.openSettings, this);
     }
 
     update() {
         if (this.isTerminating) return;
 
+        let newDirection = null;
         if (this.cursors.left.isDown || this.wasd.A.isDown) {
-            this.snakeDirection = Direction.LEFT;
+            newDirection = Direction.LEFT;
         } else if (this.cursors.right.isDown || this.wasd.D.isDown) {
-            this.snakeDirection = Direction.RIGHT;
+            newDirection = Direction.RIGHT;
         } else if (this.cursors.up.isDown || this.wasd.W.isDown) {
-            this.snakeDirection = Direction.UP;
+            newDirection = Direction.UP;
         } else if (this.cursors.down.isDown || this.wasd.S.isDown) {
-            this.snakeDirection = Direction.DOWN;
+            newDirection = Direction.DOWN;
+        }
+
+        if (newDirection !== null && this.gameStage.snake.head.getLocationOfNext() !== newDirection) {
+            this.snakeDirection = newDirection;
         }
 
         const moveComplete = this.gameStage.move(this.snakeDirection);
@@ -82,11 +94,20 @@ export default class MainScene extends Phaser.Scene {
         }
     }
 
+    pauseGame() {
+       this.scene.pause();
+       this.scene.launch(PauseScene.SCENE_NAME, { fromScene: SCENE_NAME });
+    }
+
+    openSettings() {
+        console.log('open settings');
+    }
+
     gameOver() {
         this.isTerminating = true;
         this.gameStage.consumableService.autoCreateOn = false;
         this.cameras.main.shake(500);
-        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.SHAKE_COMPLETE, () => this.scene.restart());
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.SHAKE_COMPLETE, () => this.scene.start(GameOverScene.SCENE_NAME));
     }
 
 }

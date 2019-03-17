@@ -1,6 +1,10 @@
 
 const TITLE        = 'title';
 const BACKGROUND   = 'background';
+const GAME_OVER    = 'gameOver';
+const PAUSE        = 'pause';
+const PAUSED       = 'paused';
+const SETTINGS     = 'settings';
 const SNAKE_HEAD   = 'snakeHead';
 const SNAKE_BODY   = 'snakeBody';
 const BRICK_WALL   = 'brickWall';
@@ -23,6 +27,7 @@ const BTN_BLUE     = 'btnBlue';
 
 export default class Assets {
     static get TITLE()          { return TITLE; }
+    static get GAME_OVER()      { return GAME_OVER; }
     static get SNAKE_HEAD()     { return SNAKE_HEAD; }
     static get SNAKE_BODY()     { return SNAKE_BODY; }
     static get BRICK_WALL()     { return BRICK_WALL; }
@@ -43,4 +48,7 @@ export default class Assets {
     static get ZEBRA_POOP()     { return ZEBRA_POOP; }
     static get CORN()           { return CORN; }
     static get BTN_BLUE()       { return BTN_BLUE; }
+    static get PAUSED()         { return PAUSED; }
+    static get PAUSE()          { return PAUSE; }
+    static get SETTINGS()       { return SETTINGS; }
 }

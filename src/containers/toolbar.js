@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import Assets from '../data/assets';
+import GridLayout from '../components/grid-layout';
+import Events from '../data/events';
 
 
 export default class Toolbar extends Phaser.GameObjects.Container {
@@ -27,16 +29,33 @@ export default class Toolbar extends Phaser.GameObjects.Container {
         this.setSize(width, height);  
         
         const graphics = this.scene.add.graphics();
-        graphics.fillStyle(0x8e1600, 1);
+        graphics.fillStyle(0x000000, 1);
         graphics.fillRect(0, 0, width, height);
 
         this.add(graphics);
 
         const wallSize = this.buildWalls();
 
-        const text = this.scene.add.text(wallSize.width + this.padding.left, wallSize.height + this.padding.right, 'TOOLBAR!!!!');
-        
-        this.add(text);
+        this.txtScore = this.scene.add.text(wallSize.width + this.padding.left, wallSize.height + this.padding.top, 'SCORE: 0');
+        this.add(this.txtScore);
+
+        this.btnPause = this.scene.add.image(width - (wallSize.width + this.padding.top), wallSize.height + this.padding.top, Assets.PAUSE);
+        this.btnPause.setOrigin(1, 0);
+        this.btnPause.setInteractive();
+        this.add(this.btnPause);
+
+        this.btnSettings = this.scene.add.image(width - (wallSize.width + this.padding.top) - this.btnPause.displayWidth - 10, wallSize.height + this.padding.top, Assets.SETTINGS);
+        this.btnSettings.setOrigin(1, 0);
+        this.btnSettings.setInteractive();
+        this.add(this.btnSettings);
+
+        this.btnPause.on('pointerdown', () => {
+            this.scene.events.emit(Events.PAUSE_GAME);
+        });
+
+        this.btnSettings.on('pointerdown', () => {
+            this.scene.events.emit(Events.OPEN_SETTINGS);
+        });
 
         this.scene.add.existing(this);
     }
