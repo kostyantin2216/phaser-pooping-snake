@@ -12,7 +12,7 @@ export default class Snake {
         this.scene = config.scene;
         this.boundries = config.boundries;
         this.scale = config.scale || 1;
-        this.moveDelay = config.moveDelay || 4;
+        this.moveDelay = config.moveDelay || 8;
         this.moveTicks = 0;
         this.areaWidth = config.areaWidth || this.scene.sys.game.config.width;
         this.areaHeight = config.areaHeight || this.scene.sys.game.config.height;

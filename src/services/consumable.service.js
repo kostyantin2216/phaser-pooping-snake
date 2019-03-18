@@ -3,7 +3,7 @@ import Phaser from 'phaser';
 import Assets from '../data/assets';
 import Consumable from '../components/consumable';
 import ConsumableStore from '../helpers/consumable-store';
-import { getCurrentMillis } from '../utils/common.utils';
+import { getCurrentMillis } from '../utils/date-time.utils';
 import Events from '../data/events';
 
 const HEALTHY_ASSETS = [

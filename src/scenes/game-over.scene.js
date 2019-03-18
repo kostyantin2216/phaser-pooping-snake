@@ -47,6 +47,7 @@ export default class GameOverScene extends Phaser.Scene {
         });
 
         this.events.once(Events.START_GAME, this.startGame, this);
+        this.input.keyboard.once('keydown-SPACE', this.startGame, this);
     }
 
     startGame() {

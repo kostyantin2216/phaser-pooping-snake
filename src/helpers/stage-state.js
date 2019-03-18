@@ -23,6 +23,12 @@ export default class StageState {
 
     updateScore(byAmount) {
         this.score += byAmount;
+        return this.score;
+    }
+
+    updateEllapsedSeconds(byAmount) {
+        this.secondsEllapsed += byAmount;
+        return this.secondsEllapsed;
     }
 
     consumableConsumed(consumable) {
@@ -31,6 +37,10 @@ export default class StageState {
             this.consumedConsumables[type][key]++;
         }
         console.log(this);
+    }
+
+    getConsumedConsumableCount(type, asset) {
+        return this.consumedConsumables[type][asset];
     }
 
 }

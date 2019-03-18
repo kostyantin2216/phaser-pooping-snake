@@ -1,5 +1,5 @@
 import Consumable from "../components/consumable";
-import { getCurrentMillis } from "../utils/common.utils";
+import { getCurrentMillis } from "../utils/date-time.utils";
 
 
 export default class ConsumableStore {

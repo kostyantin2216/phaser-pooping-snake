@@ -1,7 +1,10 @@
 import Phaser from 'phaser';
 import Assets from '../data/assets';
-import GridLayout from '../components/grid-layout';
 import Events from '../data/events';
+import Consumable from '../components/consumable';
+import ConsumableService from '../services/consumable.service';
+import ConsumableCount from './consumable-count';
+import { formatEllapsedMillis } from '../utils/date-time.utils';
 
 
 export default class Toolbar extends Phaser.GameObjects.Container {
@@ -14,6 +17,7 @@ export default class Toolbar extends Phaser.GameObjects.Container {
 
         this.scene = config.scene;
         this.scale = config.scale || 1;
+        this._stageStateService = config.stageStateService || null;
 
         const width  = config.width || this.scene.sys.game.config.width;
         const height = config.height || 34;
@@ -34,17 +38,21 @@ export default class Toolbar extends Phaser.GameObjects.Container {
 
         this.add(graphics);
 
-        const wallSize = this.buildWalls();
+        this.wallSize = this.buildWalls();
 
-        this.txtScore = this.scene.add.text(wallSize.width + this.padding.left, wallSize.height + this.padding.top, 'SCORE: 0');
+        this.txtScore = this.scene.add.text(this.wallSize.width + this.padding.left, this.wallSize.height + this.padding.top, 'SCORE: 0');
         this.add(this.txtScore);
 
-        this.btnPause = this.scene.add.image(width - (wallSize.width + this.padding.top), wallSize.height + this.padding.top, Assets.PAUSE);
+        this.txtTime = this.scene.add.text(width / 2, this.wallSize.height + this.padding.top, 'TIME: 00:00');
+        this.txtTime.setOrigin(.5, 0);
+        this.add(this.txtTime);
+
+        this.btnPause = this.scene.add.image(width - (this.wallSize.width + this.padding.right), this.wallSize.height + this.padding.top, Assets.PAUSE);
         this.btnPause.setOrigin(1, 0);
         this.btnPause.setInteractive();
         this.add(this.btnPause);
 
-        this.btnSettings = this.scene.add.image(width - (wallSize.width + this.padding.top) - this.btnPause.displayWidth - 10, wallSize.height + this.padding.top, Assets.SETTINGS);
+        this.btnSettings = this.scene.add.image(width - (this.wallSize.width + this.padding.right) - this.btnPause.displayWidth - 10, this.wallSize.height + this.padding.top, Assets.SETTINGS);
         this.btnSettings.setOrigin(1, 0);
         this.btnSettings.setInteractive();
         this.add(this.btnSettings);
@@ -57,7 +65,17 @@ export default class Toolbar extends Phaser.GameObjects.Container {
             this.scene.events.emit(Events.OPEN_SETTINGS);
         });
 
+        this.consumableCounts = this.buildConsumableCounts();
+
         this.scene.add.existing(this);
+    }
+
+    set stageStateService(val) {
+        this._stageStateService = val;
+    }
+
+    get stageStateService() {
+        return this._stageStateService;
     }
 
     buildWalls() {
@@ -89,6 +107,70 @@ export default class Toolbar extends Phaser.GameObjects.Container {
         wall.setOrigin(0, 0);
         this.add(wall);
         return wall;
+    }
+
+    buildConsumableCounts() {
+        const counts = {};
+
+        let x = this.padding.left + this.wallSize.width;
+        let y = this.displayHeight - this.padding.bottom;
+        let type = Consumable.TYPE_HEALTHY;
+
+        counts[type] = {};
+        ConsumableService.getAssets(type).forEach((asset) => {
+            const cc = this.createConsumableCount(Consumable.TYPE_HEALTHY, asset, x, y);
+            x += cc.displayWidth * 1.5;
+            counts[type][asset] = cc;
+        });
+
+        x = this.displayWidth - (this.padding.left + this.wallSize.width);
+        type = Consumable.TYPE_SAFE;
+
+        counts[type] = {};
+        ConsumableService.getAssets(type).forEach((asset) => {
+            const cc = this.createConsumableCount(Consumable.TYPE_SAFE, asset, x, y, 1);
+            x -= cc.displayWidth * 1.5;
+            counts[type][asset] = cc;
+        });
+
+        type = Consumable.TYPE_UNHEALTHY;
+
+        counts[type] = {};
+        ConsumableService.getAssets(Consumable.TYPE_UNHEALTHY).forEach((asset) => {
+            const cc = this.createConsumableCount(Consumable.TYPE_UNHEALTHY, asset, x, y, 1);
+            x -= cc.displayWidth * 1.5;
+            counts[type][asset] = cc;
+        });
+
+        return counts;
+    }
+
+    createConsumableCount(type, asset, x, y, originX = 0) {
+        const cc = new ConsumableCount({
+            scene: this.scene,
+            key: asset,
+            originY: 1,
+            originX, type, x, y
+        });
+        this.add(cc.icon);
+        this.add(cc.text);
+        return cc;
+    }
+
+    updateConsumableCount(type, asset, count) {
+        const cc = this.consumableCounts[type] ? this.consumableCounts[type][asset] : undefined;
+        if (cc) {
+            cc.text.setText(count);
+        }
+    }
+
+    updateScore(score) {
+        this.txtScore.setText('SCORE: ' + score);
+    }
+
+    updateTime(ellapsedMillis) {
+        const time = formatEllapsedMillis(ellapsedMillis);
+        this.txtTime.setText('TIME: ' + time);
     }
 
 }

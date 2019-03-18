@@ -5,6 +5,7 @@ const RESUME_GAME = 'resumeGame';
 const GAME_OVER = 'gameOver';
 const ON_CONSUMABLE_CONSUMED = 'onConsumableConsumed';
 const ON_CONSUMABLE_CREATED  = 'onConsumableCreated';
+const ON_SCORE_CHANGED = 'onScoreChanged';
 const OPEN_SETTINGS = 'openSettings';
 
 export default class Events {
@@ -14,5 +15,6 @@ export default class Events {
     static get GAME_OVER() { return GAME_OVER; }
     static get ON_CONSUMABLE_CONSUMED() { return ON_CONSUMABLE_CONSUMED; }
     static get ON_CONSUMABLE_CREATED() { return ON_CONSUMABLE_CREATED; }
+    static get ON_SCORE_CHANGED() { return ON_SCORE_CHANGED; }
     static get OPEN_SETTINGS() { return OPEN_SETTINGS; }
 }

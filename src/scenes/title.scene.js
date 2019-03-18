@@ -1,12 +1,10 @@
 import Phaser from 'phaser';
 import Assets from '../data/assets';
 import GameStage from '../containers/game-stage';
-import { getCurrentMillis } from '../utils/common.utils';
 import Consumable from '../components/consumable';
 import Events from '../data/events';
 import PlainButton from '../containers/plain-button';
 import MainScene from './main.scene';
-import PauseScene from './pause.scene';
 
 export const SCENE_NAME = 'TitleScene';
 
@@ -49,6 +47,7 @@ export default class TitleScene extends Phaser.Scene {
         });
 
         this.events.once(Events.START_GAME, this.startGame, this);
+        this.input.keyboard.once('keydown-SPACE', this.startGame, this);
     }
 
     startGame() {

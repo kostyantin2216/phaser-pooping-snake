@@ -1,9 +1,6 @@
 import Phaser from 'phaser';
 
 import Consumable from '../components/consumable';
-import Snake from '../components/snake';
-import ConsumableService from '../services/consumable.service';
-import Assets from '../data/assets';
 import Direction from '../data/direction';
 import { showCoordsOnHover } from '../utils/dev.utils';
 import Toolbar from '../containers/toolbar';
@@ -12,6 +9,7 @@ import StageStateService from '../services/stage-state.service';
 import GameOverScene from './game-over.scene';
 import Events from '../data/events';
 import PauseScene from './pause.scene';
+import ScoreService from '../services/score.service';
 
 export const SCENE_NAME = 'MainScene';
 
@@ -23,7 +21,7 @@ export default class MainScene extends Phaser.Scene {
         super(SCENE_NAME);
     }
 
-    init(data) {
+    init() {
         this.scale = 1;
         this.snakeDirection = Direction.UP;
         this.isTerminating = false;
@@ -49,9 +47,39 @@ export default class MainScene extends Phaser.Scene {
         this.stageStateService = new StageStateService({
             consumableService: this.gameStage.consumableService
         });
+
+        this.scoreService = new ScoreService({
+            consumableService: this.gameStage.consumableService,
+            stageStateService: this.stageStateService
+        });
+
+        this.gameStage.consumableService.on(Events.ON_CONSUMABLE_CONSUMED, (consumable) => {
+            const count = this.stageStateService.state.getConsumedConsumableCount(consumable.type, consumable.key);
+            this.toolbar.updateConsumableCount(consumable.type, consumable.key, count);
+        });
         
+        this.scoreService.on(Events.ON_SCORE_CHANGED, (score) => {
+            this.toolbar.updateScore(score);
+
+            if(score > 10) {
+                if (score < 20) {
+                    this.gameStage.snake.moveDelay = 7;
+                } else if (score < 35) {
+                    this.gameStage.snake.moveDelay = 6;
+                } else if (score < 55) {
+                    this.gameStage.snake.moveDelay = 5;
+                } else if (score < 90) {
+                    this.gameStage.snake.moveDelay = 4;
+                } else if (score < 120) {
+                    this.gameStage.snake.moveDelay = 3;
+                } else if (score < 160) {
+                    this.gameStage.snake.moveDelay = 2;
+                }
+            }
+        });
+
         this.cursors = this.input.keyboard.createCursorKeys();
-        this.wasd = this.input.keyboard.addKeys('W,S,A,D,SPACE');
+        this.wasd = this.input.keyboard.addKeys('W,S,A,D');
         
         showCoordsOnHover(this);
 
@@ -61,6 +89,8 @@ export default class MainScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-SPACE', this.pauseGame, this);
         this.events.on(Events.PAUSE_GAME, this.pauseGame, this);
         this.events.on(Events.OPEN_SETTINGS, this.openSettings, this);
+
+        this.time.addEvent({ delay: 1000, callback: this.updateTime, callbackScope: this, loop: true });
     }
 
     update() {
@@ -77,7 +107,7 @@ export default class MainScene extends Phaser.Scene {
             newDirection = Direction.DOWN;
         }
 
-        if (newDirection !== null && this.gameStage.snake.head.getLocationOfNext() !== newDirection) {
+        if (newDirection !== null /* && this.gameStage.snake.head.getLocationOfNext() !== newDirection */) {
             this.snakeDirection = newDirection;
         }
 
@@ -92,6 +122,11 @@ export default class MainScene extends Phaser.Scene {
                 return this.gameOver();
             }
         }
+    }
+
+    updateTime() {
+        const ellapsedSeconds = this.stageStateService.state.updateEllapsedSeconds(1);
+        this.toolbar.updateTime(ellapsedSeconds * 1000);
     }
 
     pauseGame() {
