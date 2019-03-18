@@ -1,13 +1,13 @@
 import Phaser from 'phaser';
+
 import Events from '../data/events';
 import Consumable from '../components/consumable';
 
-export default class ScoreService extends Phaser.Events.EventEmitter {
+export default class ScoreCalculator extends Phaser.Events.EventEmitter {
 
     constructor(config) {
         super();
-
-        this.stageStateService = config.stageStateService;
+        this.stageState = config.stageState;
         this.consumableService = config.consumableService;
 
         this.consumableService.on(Events.ON_CONSUMABLE_CONSUMED, this.onConsumableConsumed, this);
@@ -29,7 +29,7 @@ export default class ScoreService extends Phaser.Events.EventEmitter {
         }
 
         if (points > 0) {
-            const score = this.stageStateService.state.updateScore(points);
+            const score = this.stageState.updateScore(points);
             this.emit(Events.ON_SCORE_CHANGED, score);
         }
     }

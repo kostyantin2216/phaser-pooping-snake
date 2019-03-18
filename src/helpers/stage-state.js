@@ -1,10 +1,14 @@
 import Consumable from "../components/consumable";
 import ConsumableService from "../services/consumable.service";
+import Events from "../data/events";
 
 export default class StageState {
 
-    constructor(state = {}) {
-        this.setState(state);
+    constructor(config) {
+        this.setState(config.state || {});
+
+        const consumableService = config.consumableService;
+        consumableService.on(Events.ON_CONSUMABLE_CONSUMED, this.consumableConsumed, this);
     }
 
     setState(state) {
@@ -19,6 +23,14 @@ export default class StageState {
             }, consumedConsumables[type] || {});
             return cAcc;
         }, {});
+    }
+
+    getState() {
+        return {
+            score: this.score,
+            secondsEllapsed: this.secondsEllapsed,
+            consumedConsumables: this.consumedConsumables
+        };
     }
 
     updateScore(byAmount) {
@@ -36,7 +48,6 @@ export default class StageState {
         if (type != null && key) {
             this.consumedConsumables[type][key]++;
         }
-        console.log(this);
     }
 
     getConsumedConsumableCount(type, asset) {

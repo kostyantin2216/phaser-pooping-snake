@@ -3,6 +3,9 @@ import Assets from '../data/assets';
 import Snake from '../components/snake';
 import ConsumableService from '../services/consumable.service';
 import Consumable from '../components/consumable';
+import StageState from '../helpers/stage-state';
+import ScoreCalculator from '../helpers/score-calculator';
+import Events from '../data/events';
 
 export default class GameStage extends Phaser.GameObjects.Container {
 
@@ -12,10 +15,11 @@ export default class GameStage extends Phaser.GameObjects.Container {
         if (config.x) this.x = config.x;
         if (config.y) this.y = config.y;
 
-        this.scene = config.scene;
-        this.scale = config.scale;
+        this.scene   = config.scene;
+        this.scale   = config.scale;
+        this.toolbar = config.toolbar || null;
 
-        const width = config.width || this.scene.sys.game.config.width;
+        const width  = config.width  || this.scene.sys.game.config.width;
         const height = config.height || this.scene.sys.game.config.height;
 
         this.setSize(width, height);
@@ -48,6 +52,9 @@ export default class GameStage extends Phaser.GameObjects.Container {
         }
         this.snake = new Snake(snakeConfig);
 
+        this.scene.add.existing(this);
+
+
         const consumableServiceConfig = { 
             scene: this.scene, 
             container: this,
@@ -61,8 +68,22 @@ export default class GameStage extends Phaser.GameObjects.Container {
             Phaser.Utils.Objects.Extend(consumableServiceConfig, config.consumableServiceConfig);
         }
         this.consumableService = new ConsumableService(consumableServiceConfig);
-    
-        this.scene.add.existing(this);
+
+        if (this.toolbar !== null) {
+            this.state = new StageState({
+                consumableService: this.consumableService
+            });
+
+            this.scoreCalculator = new ScoreCalculator({
+                consumableService: this.consumableService,
+                stageState: this.state
+            });
+
+            this.consumableService.on(Events.ON_CONSUMABLE_CONSUMED, this.onConsumableConsumed, this);
+            this.scoreCalculator.on(Events.ON_SCORE_CHANGED, this.onScoreChanged, this);
+
+            this.scene.time.addEvent({ delay: 1000, callback: this.updateTime, callbackScope: this, loop: true });
+        }
     }
 
     buildWalls() {
@@ -115,6 +136,36 @@ export default class GameStage extends Phaser.GameObjects.Container {
         }
 
         return consumable;
+    }
+
+    onConsumableConsumed(consumable) {
+        const count = this.state.getConsumedConsumableCount(consumable.type, consumable.key);
+        this.toolbar.updateConsumableCount(consumable.type, consumable.key, count);
+    }
+
+    onScoreChanged(score) {
+        this.toolbar.updateScore(score);
+
+        if(score > 10) {
+            if (score < 20) {
+                this.snake.moveDelay = 7;
+            } else if (score < 35) {
+                this.snake.moveDelay = 6;
+            } else if (score < 55) {
+                this.snake.moveDelay = 5;
+            } else if (score < 90) {
+                this.snake.moveDelay = 4;
+            } else if (score < 120) {
+                this.snake.moveDelay = 3;
+            } else if (score < 160) {
+                this.snake.moveDelay = 2;
+            }
+        }
+    }
+
+    updateTime() {
+        const ellapsedSeconds = this.state.updateEllapsedSeconds(1);
+        this.toolbar.updateTime(ellapsedSeconds * 1000);
     }
 
 }

@@ -5,11 +5,11 @@ import Direction from '../data/direction';
 import { showCoordsOnHover } from '../utils/dev.utils';
 import Toolbar from '../containers/toolbar';
 import GameStage from '../containers/game-stage';
-import StageStateService from '../services/stage-state.service';
 import GameOverScene from './game-over.scene';
 import Events from '../data/events';
 import PauseScene from './pause.scene';
-import ScoreService from '../services/score.service';
+import ScoreCalculator from '../helpers/score-calculator';
+import StageState from '../helpers/stage-state';
 
 export const SCENE_NAME = 'MainScene';
 
@@ -37,45 +37,12 @@ export default class MainScene extends Phaser.Scene {
             height: 68
         });
 
-        this.gameStage = new GameStage({
+        this.stage = new GameStage({
             scene: this,
+            toolbar: this.toolbar,
             scale: this.scale,
             height: this.sys.game.config.height - this.toolbar.displayHeight,
             y: this.toolbar.displayHeight,
-        });
-
-        this.stageStateService = new StageStateService({
-            consumableService: this.gameStage.consumableService
-        });
-
-        this.scoreService = new ScoreService({
-            consumableService: this.gameStage.consumableService,
-            stageStateService: this.stageStateService
-        });
-
-        this.gameStage.consumableService.on(Events.ON_CONSUMABLE_CONSUMED, (consumable) => {
-            const count = this.stageStateService.state.getConsumedConsumableCount(consumable.type, consumable.key);
-            this.toolbar.updateConsumableCount(consumable.type, consumable.key, count);
-        });
-        
-        this.scoreService.on(Events.ON_SCORE_CHANGED, (score) => {
-            this.toolbar.updateScore(score);
-
-            if(score > 10) {
-                if (score < 20) {
-                    this.gameStage.snake.moveDelay = 7;
-                } else if (score < 35) {
-                    this.gameStage.snake.moveDelay = 6;
-                } else if (score < 55) {
-                    this.gameStage.snake.moveDelay = 5;
-                } else if (score < 90) {
-                    this.gameStage.snake.moveDelay = 4;
-                } else if (score < 120) {
-                    this.gameStage.snake.moveDelay = 3;
-                } else if (score < 160) {
-                    this.gameStage.snake.moveDelay = 2;
-                }
-            }
         });
 
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -83,14 +50,12 @@ export default class MainScene extends Phaser.Scene {
         
         showCoordsOnHover(this);
 
-        this.gameStage.snake.grow();
-        this.gameStage.snake.grow();
+        this.stage.snake.grow();
+        this.stage.snake.grow();
 
         this.input.keyboard.on('keydown-SPACE', this.pauseGame, this);
         this.events.on(Events.PAUSE_GAME, this.pauseGame, this);
         this.events.on(Events.OPEN_SETTINGS, this.openSettings, this);
-
-        this.time.addEvent({ delay: 1000, callback: this.updateTime, callbackScope: this, loop: true });
     }
 
     update() {
@@ -107,26 +72,21 @@ export default class MainScene extends Phaser.Scene {
             newDirection = Direction.DOWN;
         }
 
-        if (newDirection !== null /* && this.gameStage.snake.head.getLocationOfNext() !== newDirection */) {
+        if (newDirection !== null /* && this.stage.snake.head.getLocationOfNext() !== newDirection */) {
             this.snakeDirection = newDirection;
         }
 
-        const moveComplete = this.gameStage.move(this.snakeDirection);
+        const moveComplete = this.stage.move(this.snakeDirection);
         if (moveComplete) {
-            if (!this.gameStage.validSnakeLocation()) {
+            if (!this.stage.validSnakeLocation()) {
                 return this.gameOver();
             }
 
-            const consumable = this.gameStage.tryToConsume();
+            const consumable = this.stage.tryToConsume();
             if (consumable !== null && consumable.type === Consumable.TYPE_DANGEROUS) {
                 return this.gameOver();
             }
         }
-    }
-
-    updateTime() {
-        const ellapsedSeconds = this.stageStateService.state.updateEllapsedSeconds(1);
-        this.toolbar.updateTime(ellapsedSeconds * 1000);
     }
 
     pauseGame() {
@@ -140,9 +100,11 @@ export default class MainScene extends Phaser.Scene {
 
     gameOver() {
         this.isTerminating = true;
-        this.gameStage.consumableService.autoCreateOn = false;
+        this.stage.consumableService.autoCreateOn = false;
         this.cameras.main.shake(500);
-        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.SHAKE_COMPLETE, () => this.scene.start(GameOverScene.SCENE_NAME));
+        this.cameras.main.once(Phaser.Cameras.Scene2D.Events.SHAKE_COMPLETE, () => {
+            this.scene.start(GameOverScene.SCENE_NAME, { state: this.stage.state.getState() });
+        });
     }
 
 }

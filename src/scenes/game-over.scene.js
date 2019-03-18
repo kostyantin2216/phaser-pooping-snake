@@ -15,11 +15,16 @@ export default class GameOverScene extends Phaser.Scene {
     constructor() {
         super(SCENE_NAME);
     }
+
+    init(data) {
+        this.previousGameState = data.state;
+    }
     
     preload() {
     }
     
     create() {
+        console.log(this.previousGameState);
         const { width, height } = this.sys.game.config;
 
         this.gameStage = new GameStage({
