@@ -48,7 +48,7 @@ export default class GameSummary extends Phaser.GameObjects.Container {
         const healthyRowSize = this.buildConsumableCount(Consumable.TYPE_HEALTHY, healthyAssets.slice(0, Math.floor(healthyAssets.length / 2)),  healthyRowOneY);
         this.buildConsumableCount(Consumable.TYPE_HEALTHY, healthyAssets.slice(Math.floor(healthyAssets.length / 2), healthyAssets.length), healthyRowOneY + healthyRowSize.height + 5);
 
-        this.txtUnhealthy = this.scene.add.text(config.width / 2, healthyRowOneY + (healthyRowSize.height * 2) + this.linePadding + 5, 'UNHEALTHY FOOD');
+        this.txtUnhealthy = this.scene.add.text(config.width / 2, healthyRowOneY + (healthyRowSize.height * 2) + this.linePadding + 5, 'JUNK FOOD');
         this.txtUnhealthy.setOrigin(.5, 0);
         this.add(this.txtUnhealthy);
 

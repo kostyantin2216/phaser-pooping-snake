@@ -6,6 +6,9 @@ import Consumable from '../components/consumable';
 import StageState from '../helpers/stage-state';
 import ScoreCalculator from '../helpers/score-calculator';
 import Events from '../data/events';
+import Direction from '../data/direction';
+
+const BASE_SPEED = 10;
 
 export default class GameStage extends Phaser.GameObjects.Container {
 
@@ -50,7 +53,16 @@ export default class GameStage extends Phaser.GameObjects.Container {
         if (config.snakeConfig) {
             Phaser.Utils.Objects.Extend(snakeConfig, config.snakeConfig);
         }
-        this.snake = new Snake(snakeConfig);
+        this.snake          = new Snake(snakeConfig);
+        this.snakeDirection = config.snakeDirection || Direction.UP;
+        this._snakeSpeed    = config.snakeSpeed || 20;
+
+        this.moveSnakeEvent = this.scene.time.addEvent({ 
+            delay: this.snakeSpeedMillis, 
+            callback: this.moveSnake, 
+            callbackScope: this, 
+            loop: true 
+        });
 
         this.scene.add.existing(this);
 
@@ -86,6 +98,21 @@ export default class GameStage extends Phaser.GameObjects.Container {
         }
     }
 
+    get snakeSpeed() {
+        return this._snakeSpeed;
+    }
+
+    set snakeSpeed(speed) {
+        if (speed !== this._snakeSpeed) {
+            this._snakeSpeed = speed;
+            this.moveSnakeEvent.delay = this.snakeSpeedMillis;
+        }
+    }
+
+    get snakeSpeedMillis() {
+        return Math.floor(BASE_SPEED * this._snakeSpeed);
+    }
+
     buildWalls() {
         const wall = this.createWall(0, 0);
         const wallWidth = wall.displayWidth;
@@ -117,8 +144,25 @@ export default class GameStage extends Phaser.GameObjects.Container {
         return wall;
     }
 
-    move(direction) {
-        return this.snake.move(direction);
+    moveSnake() {
+        if (this.snake.move(this.snakeDirection)) {
+            if (!this.validSnakeLocation()) {
+                this.emit(Events.GAME_OVER);
+            } else {
+                const consumable = this.tryToConsume();
+                if (consumable !== null && consumable.type === Consumable.TYPE_DANGEROUS) {
+                    this.emit(Events.GAME_OVER);
+                }
+            }
+        }
+    }
+
+    pauseSnakeMovement() {
+        this.moveSnakeEvent.paused = true;
+    }
+
+    resumeSnakeMovement() {
+        this.moveSnakeEvent.paused = false;
     }
 
     validSnakeLocation() {
@@ -146,19 +190,41 @@ export default class GameStage extends Phaser.GameObjects.Container {
     onScoreChanged(score) {
         this.toolbar.updateScore(score);
 
-        if(score > 10) {
-            if (score < 20) {
-                this.snake.moveDelay = 7;
-            } else if (score < 35) {
-                this.snake.moveDelay = 6;
-            } else if (score < 55) {
-                this.snake.moveDelay = 5;
+        if(score > 5) {
+            if (score < 10) {
+                this.snakeSpeed = 18;
+            } else if (score < 20) {
+                this.snakeSpeed = 16.5;
+            } else if (score < 30) {
+                this.snakeSpeed = 14;
+            } else if (score < 40) {
+                this.snakeSpeed = 13;
+            } else if (score < 50) {
+                this.snakeSpeed = 12.5
+            } else if (score < 60) {
+                this.snakeSpeed = 12;
+            } else if (score < 70) {
+                this.snakeSpeed = 11.5;
+            } else if (score < 80) {
+                this.snakeSpeed = 11;
             } else if (score < 90) {
-                this.snake.moveDelay = 4;
+                this.snakeSpeed = 10.5;
+            } else if (score < 100) {
+                this.snakeSpeed = 10;
             } else if (score < 120) {
-                this.snake.moveDelay = 3;
+                this.snakeSpeed = 9.5;
+            } else if (score < 140) {
+                this.snakeSpeed = 9;
             } else if (score < 160) {
-                this.snake.moveDelay = 2;
+                this.snakeSpeed = 8.5;
+            } else if (score < 180) {
+                this.snakeSpeed = 8;
+            } else if (score < 200) {
+                this.snakeSpeed = 7.5;
+            } else if (score < 240) {
+                this.snakeSpeed = 7;
+            } else if (score < 280) {
+                this.snakeSpeed = 6.5;
             }
         }
     }

@@ -33,14 +33,14 @@ export default class GameOverScene extends Phaser.Scene {
             scene: this,
             scale: 1,
             snakeConfig: {
-                visible: false,
-                stopped: true
+                visible: false
             },
             consumableServiceConfig: {
                 autoCreateDelay: 111,
                 autoCreateFunc: this.createConsumable
             }
         });
+        this.gameStage.pauseSnakeMovement();
 
         this.title = this.add.image(0, 0, Assets.GAME_OVER);
 

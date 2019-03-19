@@ -27,14 +27,14 @@ export default class TitleScene extends Phaser.Scene {
             scene: this,
             scale: 1,
             snakeConfig: {
-                visible: false,
-                stopped: true
+                visible: false
             },
             consumableServiceConfig: {
                 autoCreateDelay: 500,
                 autoCreateFunc: this.createConsumable
             }
         });
+        this.gameStage.pauseSnakeMovement();
 
         this.title = this.add.image(width / 2, height / 3, Assets.TITLE);
 

@@ -12,12 +12,9 @@ export default class Snake {
         this.scene = config.scene;
         this.boundries = config.boundries;
         this.scale = config.scale || 1;
-        this.moveDelay = config.moveDelay || 8;
-        this.moveTicks = 0;
         this.areaWidth = config.areaWidth || this.scene.sys.game.config.width;
         this.areaHeight = config.areaHeight || this.scene.sys.game.config.height;
         this.container = config.container || null;
-        this.stopped = config.stopped || false;
 
         if (!config.x) config.x = this.areaWidth / 2;
         if (!config.y) config.y = this.areaHeight / 2;
@@ -96,8 +93,6 @@ export default class Snake {
     }
     
     canMove(direction) {
-        if (this.stopped || this.moveTicks % this.moveDelay !== 0) return false;
-
         const part = this.head;
 
         let newX = null;

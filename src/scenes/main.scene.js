@@ -8,8 +8,6 @@ import GameStage from '../containers/game-stage';
 import GameOverScene from './game-over.scene';
 import Events from '../data/events';
 import PauseScene from './pause.scene';
-import ScoreCalculator from '../helpers/score-calculator';
-import StageState from '../helpers/stage-state';
 
 export const SCENE_NAME = 'MainScene';
 
@@ -56,6 +54,7 @@ export default class MainScene extends Phaser.Scene {
         this.input.keyboard.on('keydown-SPACE', this.pauseGame, this);
         this.events.on(Events.PAUSE_GAME, this.pauseGame, this);
         this.events.on(Events.OPEN_SETTINGS, this.openSettings, this);
+        this.stage.on(Events.GAME_OVER, this.gameOver, this);
     }
 
     update() {
@@ -73,20 +72,10 @@ export default class MainScene extends Phaser.Scene {
         }
 
         if (newDirection !== null && this.stage.snake.head.getLocationOfNext() !== newDirection) {
-            this.snakeDirection = newDirection;
+            this.stage.snakeDirection = newDirection;
         }
 
-        const moveComplete = this.stage.move(this.snakeDirection);
-        if (moveComplete) {
-            if (!this.stage.validSnakeLocation()) {
-                return this.gameOver();
-            }
-
-            const consumable = this.stage.tryToConsume();
-            if (consumable !== null && consumable.type === Consumable.TYPE_DANGEROUS) {
-                return this.gameOver();
-            }
-        }
+       // this.stage.move(this.snakeDirection);
     }
 
     pauseGame() {
