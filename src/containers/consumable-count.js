@@ -13,7 +13,7 @@ export default class ConsumableCount {
         if (!config.spacing) config.spacing = 4;
         
         this.config = config;
-        this._count = 0;
+        this._count = config.count || 0;
 
         this.icon = this.scene.add.image(config.x, config.y, this.key);
         this.icon.setOrigin(config.originX, config.originY);

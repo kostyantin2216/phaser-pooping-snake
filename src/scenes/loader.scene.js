@@ -5,6 +5,8 @@ import ProgressBar from '../containers/progress-bar';
 import Assets from '../data/assets';
 
 import app from '../app';
+import GameOverScene from './game-over.scene';
+import MainScene from './main.scene';
 
 export const SCENE_NAME = 'LoaderScene';
 

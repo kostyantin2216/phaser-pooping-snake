@@ -22,7 +22,7 @@ const UNHEALTHY_ASSETS = [
     Assets.GREEN_PEPPER
 ];
 
-const SAFE_ASSETS = [
+const SPECIAL_ASSETS = [
     Assets.TOILET_PAPER
 ];
 
@@ -41,13 +41,13 @@ const DEFAULT_AUTO_CREATE_FUNC = function(consumableStore) {
     }
 
     const dangerousConsumables = consumableStore[Consumable.TYPE_DANGEROUS];
-    const safeConsumables = consumableStore[Consumable.TYPE_SAFE];
+    const safeConsumables = consumableStore[Consumable.TYPE_SPECIAL];
 
     if (dangerousConsumables.data.length >= 3 && safeConsumables.data.length < dangerousConsumables.data.length) {
         const ellpasedMillis = getCurrentMillis() - safeConsumables.lastCreation;
         const ellapsedSeconds = ellpasedMillis / 1000;
         if (ellapsedSeconds > 9 - (safeConsumables.data.length - 3)) {
-            return Consumable.TYPE_SAFE;
+            return Consumable.TYPE_SPECIAL;
         }
     }
 
@@ -82,8 +82,8 @@ export default class ConsumableService extends Phaser.Events.EventEmitter {
                 return [ ...HEALTHY_ASSETS ];
             case Consumable.TYPE_UNHEALTHY:
                 return [ ...UNHEALTHY_ASSETS ];
-            case Consumable.TYPE_SAFE:
-                return [ ...SAFE_ASSETS ];
+            case Consumable.TYPE_SPECIAL:
+                return [ ...SPECIAL_ASSETS ];
         }
 
         return [];
@@ -156,7 +156,7 @@ export default class ConsumableService extends Phaser.Events.EventEmitter {
         let coords = null;
         let dangerousConsumable = null;
 
-        if (!forceUnoccupied && type === Consumable.TYPE_SAFE) {
+        if (!forceUnoccupied && type === Consumable.TYPE_SPECIAL) {
             const dangerousConsumables = this.store[Consumable.TYPE_DANGEROUS].data;
             for (let i = 0; i < dangerousConsumables.length; i++) {
                 if(!dangerousConsumables[i].safeConsumable) {
@@ -202,7 +202,7 @@ export default class ConsumableService extends Phaser.Events.EventEmitter {
                 type
             });
 
-            if (dangerousConsumable !== null && type === Consumable.TYPE_SAFE) {
+            if (dangerousConsumable !== null && type === Consumable.TYPE_SPECIAL) {
                 consumable.dangerousConsumable = dangerousConsumable;
                 dangerousConsumable.safeConsumable = consumable;
             }
@@ -226,7 +226,7 @@ export default class ConsumableService extends Phaser.Events.EventEmitter {
             this.create(Consumable.TYPE_DANGEROUS);
         }
 
-        if (consumable.type === Consumable.TYPE_SAFE && consumable.dangerousConsumable) {
+        if (consumable.type === Consumable.TYPE_SPECIAL && consumable.dangerousConsumable) {
             this.store.remove(consumable.dangerousConsumable);
         }
 
@@ -304,8 +304,8 @@ export default class ConsumableService extends Phaser.Events.EventEmitter {
             case Consumable.TYPE_UNHEALTHY:
                 assets = UNHEALTHY_ASSETS;
                 break;
-            case Consumable.TYPE_SAFE:
-                assets = SAFE_ASSETS;
+            case Consumable.TYPE_SPECIAL:
+                assets = SPECIAL_ASSETS;
                 break;
             case Consumable.TYPE_DANGEROUS:
                 assets = DANGEROUS_ASSETS;

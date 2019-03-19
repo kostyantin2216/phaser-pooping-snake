@@ -124,11 +124,11 @@ export default class Toolbar extends Phaser.GameObjects.Container {
         });
 
         x = this.displayWidth - (this.padding.left + this.wallSize.width);
-        type = Consumable.TYPE_SAFE;
+        type = Consumable.TYPE_SPECIAL;
 
         counts[type] = {};
         ConsumableService.getAssets(type).forEach((asset) => {
-            const cc = this.createConsumableCount(Consumable.TYPE_SAFE, asset, x, y, 1);
+            const cc = this.createConsumableCount(Consumable.TYPE_SPECIAL, asset, x, y, 1);
             x -= cc.displayWidth * 1.5;
             counts[type][asset] = cc;
         });

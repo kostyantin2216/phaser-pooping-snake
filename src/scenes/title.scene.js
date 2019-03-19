@@ -5,6 +5,7 @@ import Consumable from '../components/consumable';
 import Events from '../data/events';
 import PlainButton from '../containers/plain-button';
 import MainScene from './main.scene';
+import LinearLayout from '../components/linear-layout';
 
 export const SCENE_NAME = 'TitleScene';
 
@@ -48,6 +49,12 @@ export default class TitleScene extends Phaser.Scene {
 
         this.events.once(Events.START_GAME, this.startGame, this);
         this.input.keyboard.once('keydown-SPACE', this.startGame, this);
+/* 
+        this.ll = new LinearLayout({
+            scene: this,
+            rows: 10
+        });
+        this.ll.show(); */
     }
 
     startGame() {

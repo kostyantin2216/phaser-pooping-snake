@@ -23,7 +23,7 @@ export default class ScoreCalculator extends Phaser.Events.EventEmitter {
             case Consumable.TYPE_UNHEALTHY:
                 points = 3;
                 break;
-            case Consumable.TYPE_SAFE:
+            case Consumable.TYPE_SPECIAL:
                 points = 7;
                 break;
         }

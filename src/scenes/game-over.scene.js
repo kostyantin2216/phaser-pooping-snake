@@ -5,6 +5,9 @@ import Assets from '../data/assets';
 import Events from '../data/events';
 import Consumable from '../components/consumable';
 import MainScene from './main.scene';
+import GridLayout from '../components/grid-layout';
+import { formatEllapsedMillis } from '../utils/date-time.utils';
+import GameSummary from '../containers/game-summary';
 
 export const SCENE_NAME = 'GameOverScene';
 
@@ -17,14 +20,13 @@ export default class GameOverScene extends Phaser.Scene {
     }
 
     init(data) {
-        this.previousGameState = data.state;
+        this.previousGameState = data.state || {};
     }
     
     preload() {
     }
     
     create() {
-        console.log(this.previousGameState);
         const { width, height } = this.sys.game.config;
 
         this.gameStage = new GameStage({
@@ -40,16 +42,38 @@ export default class GameOverScene extends Phaser.Scene {
             }
         });
 
-        this.title = this.add.image(width / 2, height / 3, Assets.GAME_OVER);
+        this.title = this.add.image(0, 0, Assets.GAME_OVER);
 
-        new PlainButton({
+        this.btnPlay = new PlainButton({
             scene: this,
             key: Assets.BTN_BLUE,
             text: 'Play Again',
-            event: Events.START_GAME,
-            x: width / 2,
-            y: height - (height / 3)
+            event: Events.START_GAME
         });
+
+        this.summary = new GameSummary({
+            scene: this,
+            gameState: this.previousGameState,
+            width: 280,
+            height: 270,
+            linePadding: 20,
+            padding: {
+                top: 20,
+                bottom: 20,
+                left: 20,
+                right: 20
+            }
+        });
+
+        this.grid = new GridLayout({
+            scene: this,
+            cols: 17,
+            rows: 17
+        });
+        this.grid.placeAtIndex(59, this.title);
+        this.grid.placeAtIndex(89, this.summary);
+        this.grid.placeAtIndex(246, this.btnPlay);
+      //  this.grid.show();
 
         this.events.once(Events.START_GAME, this.startGame, this);
         this.input.keyboard.once('keydown-SPACE', this.startGame, this);

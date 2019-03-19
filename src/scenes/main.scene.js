@@ -72,7 +72,7 @@ export default class MainScene extends Phaser.Scene {
             newDirection = Direction.DOWN;
         }
 
-        if (newDirection !== null /* && this.stage.snake.head.getLocationOfNext() !== newDirection */) {
+        if (newDirection !== null && this.stage.snake.head.getLocationOfNext() !== newDirection) {
             this.snakeDirection = newDirection;
         }
 
